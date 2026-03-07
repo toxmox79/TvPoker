@@ -188,8 +188,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 
 /* View container */
 .view-area{flex:1;position:relative;overflow:hidden;}
-.view{display:none;position:absolute;inset:0;flex-direction:column;}
-.view.active{display:flex;}
 
 /* VIEW 1 – Cards visible */
 .cards-area{
@@ -217,62 +215,52 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 .hand-card.hidden::before{background:repeating-linear-gradient(45deg,rgba(200,168,75,.05) 0px,rgba(200,168,75,.05) 2px,transparent 2px,transparent 8px);}
 
 /* ══════════════════════════════════
-   GAME VIEWS — LANDSCAPE LAYOUT
-   Left: content  |  Right: actions (120px)
+   GAME VIEWS — LANDSCAPE: LEFT + RIGHT PANEL
+   Alle Views gleich: .vl (Inhalt) | .vr (Aktionen vertikal)
 ══════════════════════════════════ */
 .view{display:none;position:absolute;inset:0;flex-direction:row;}
 .view.active{display:flex;}
 
-/* ── RIGHT ACTION PANEL (View 3 only) ── */
+/* ── LEFT CONTENT PANEL ── */
+.vl{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;position:relative;
+}
+
+/* ── RIGHT ACTION PANEL (alle Views) ── */
 .vr{
   width:110px;flex-shrink:0;
   display:flex;flex-direction:column;gap:5px;
   padding:8px 6px 10px;
-  background:linear-gradient(180deg,#1f1008,#2a1508 40%,#1f1008);
+  background:linear-gradient(180deg,#1a0a04,#2a1508 50%,#1a0a04);
   border-left:2px solid var(--gold-dark);
   position:relative;
 }
 .vr::before{
   content:'';position:absolute;left:0;top:0;bottom:0;width:1px;
   background:linear-gradient(180deg,transparent,var(--gold-dark) 30%,var(--gold-light) 50%,var(--gold-dark) 70%,transparent);
-  opacity:.5;
+  opacity:.6;
 }
-.vbtns{display:flex;flex-direction:column;gap:5px;width:100%;}
+.vbtns{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:auto;margin-bottom:auto;}
 
-/* ── HORIZONTAL ACTION BAR (View 1 + 2) ── */
-.v-actions-bar{
-  flex:0 0 auto;
-  background:linear-gradient(180deg,#1a0e05,#2a1508);
-  border-top:2px solid var(--gold-dark);
-  padding:10px 10px 14px;
-  position:relative;
-}
-.v-actions-bar::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--gold-dark) 20%,var(--gold-light) 50%,var(--gold-dark) 80%,transparent);
-}
-.v-abtns{display:flex;gap:6px;}
-.v-abtns .abtn{flex:1;height:var(--btn-h);}
-
-/* ── SHARED ACTION BUTTON STYLES ── */
+/* ── ACTION BUTTONS (vertikal, alle Views) ── */
 .abtn{
-  border:none;border-radius:8px;cursor:pointer;
+  width:100%;height:44px;border:none;border-radius:8px;cursor:pointer;
   font-family:'Cinzel',serif;font-weight:700;font-size:10px;letter-spacing:.5px;
   display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;
   transition:transform .08s,opacity .1s;position:relative;overflow:hidden;
 }
 .abtn:active{transform:scale(.93);}
 .abtn::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,transparent 55%);pointer-events:none;}
-.abtn .a-icon{font-size:15px;line-height:1;}
-.abtn .a-lbl{font-size:8px;letter-spacing:.8px;}
+.abtn .a-icon{font-size:16px;line-height:1;}
+.abtn .a-lbl{font-size:7px;letter-spacing:.8px;margin-top:1px;}
 .abtn.fold {background:linear-gradient(180deg,#7a1a1a,#4a0f0f);color:#ffb3b3;border:1px solid #9a2a2a;box-shadow:0 3px 0 #250808;}
 .abtn.check{background:linear-gradient(180deg,#1a4a7a,#0f2a4a);color:#b3d4ff;border:1px solid #2a5a9a;box-shadow:0 3px 0 #081828;}
 .abtn.call {background:linear-gradient(180deg,#2a6a2a,#1a3a1a);color:#b3ffb3;border:1px solid #3a8a3a;box-shadow:0 3px 0 #081808;}
 .abtn.raise{background:linear-gradient(180deg,#8a6a10,#5a4008);color:#ffe090;border:1px solid var(--gold);box-shadow:0 3px 0 #2a1a04;}
 .abtn.allin{background:linear-gradient(180deg,#8a1a8a,#4a0a4a);color:#ffb3ff;border:1px solid #aa3aaa;box-shadow:0 3px 0 #280828;}
-.abtn:disabled{opacity:.28;pointer-events:none;}
-/* Vertical buttons (View 3 right panel) */
-.vbtns .abtn{width:100%;height:40px;}
+.abtn:disabled{opacity:.25;pointer-events:none;}
 
 /* ── RAISE PANEL (global slide-up modal) ── */
 #raise-panel{
@@ -290,8 +278,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
   background:linear-gradient(90deg,transparent,var(--gold-dark) 20%,var(--gold-light) 50%,var(--gold-dark) 80%,transparent);
 }
 .rp-val{
-  font-family:'Cinzel Decorative',cursive;font-size:24px;
-  color:var(--gold-light);text-shadow:0 0 24px rgba(200,168,75,.55);
+  font-family:'Cinzel Decorative',cursive;font-size:26px;
+  color:var(--gold-light);text-shadow:0 0 24px rgba(200,168,75,.6);
   letter-spacing:2px;
 }
 .rp-slider-wrap{width:100%;max-width:360px;}
@@ -310,29 +298,26 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 .rp-preset{
   background:rgba(0,0,0,.5);color:var(--gold);
   border:1px solid var(--gold-dark);border-radius:18px;
-  padding:6px 14px;font-family:'Cinzel',serif;font-size:10px;
+  padding:6px 14px;font-family:'Cinzel',serif;font-size:11px;
   cursor:pointer;transition:all .12s;
 }
-.rp-preset:active,.rp-preset.sel{
-  background:rgba(200,168,75,.2);border-color:var(--gold-light);color:var(--gold-light);
-}
+.rp-preset:active,.rp-preset.sel{background:rgba(200,168,75,.2);border-color:var(--gold-light);color:var(--gold-light);}
 .rp-confirm-row{display:flex;gap:10px;width:100%;max-width:360px;}
 .rp-confirm{
-  flex:1;height:44px;border:none;border-radius:8px;cursor:pointer;
-  font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:1px;
+  flex:1;height:46px;border:none;border-radius:8px;cursor:pointer;
+  font-family:'Cinzel',serif;font-weight:700;font-size:13px;letter-spacing:1px;
   background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));
   color:var(--wood);box-shadow:0 3px 0 #5a3a10;
 }
 .rp-cancel{
-  width:60px;height:44px;border:1px solid rgba(200,168,75,.3);border-radius:8px;
-  cursor:pointer;font-family:'Cinzel',serif;font-size:18px;
+  width:60px;height:46px;border:1px solid rgba(200,168,75,.3);border-radius:8px;
+  cursor:pointer;font-family:'Cinzel',serif;font-size:20px;
   background:rgba(0,0,0,.6);color:rgba(200,168,75,.5);
 }
 .rp-confirm:active{transform:translateY(2px);box-shadow:0 1px 0 #5a3a10;}
 
 /* VIEW 1 — cards */
 #view-cards{background:radial-gradient(ellipse at 30% 50%,var(--felt-light) 0%,var(--felt) 45%,var(--felt-dark) 100%);}
-.vl{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative;}
 .cards-area{display:flex;align-items:center;justify-content:center;gap:16px;flex:1;padding:8px;}
 .info-strip{display:flex;align-items:center;justify-content:center;gap:10px;padding:3px 8px;font-size:9px;color:rgba(200,168,75,.5);letter-spacing:1px;}
 .pot-pill{background:rgba(0,0,0,.45);border:1px solid var(--gold-dark);border-radius:12px;padding:3px 10px;font-size:10px;color:var(--gold-light);}
@@ -361,43 +346,76 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 .pk-front .hc-tl{top:5px;left:6px;font-size:clamp(11px,3vh,16px);}
 .pk-front .hc-c{font-size:clamp(28px,9vh,44px);}
 .pk-front .hc-br{bottom:5px;right:6px;font-size:clamp(11px,3vh,16px);}
-.peek-shadow{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:70%;height:7px;border-radius:50%;background:rgba(0,0,0,.4);filter:blur(3px);transition:all .1s;}
+.peek-shadow{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:70%;height:7px;border-radius:50%;background:rgba(0,0,0,.4);filter:blur(3px);transition:all .3s;}
 
-/* VIEW 3 — table: 3 columns (players | table+cards | actions) */
-#view-table{background:radial-gradient(ellipse at 40% 50%,var(--felt-light) 0%,var(--felt) 40%,#0a1c10 100%);}
+/* VIEW 3 — 3 Spalten: Spieler | Tisch | Aktionen */
+#view-table{background:radial-gradient(ellipse at 35% 50%,var(--felt-light) 0%,var(--felt) 40%,#0a1c10 100%);}
 
-/* Players column (left) */
+/* Linke Spielerspalte — breiter, bessere Darstellung */
 .v3-players{
-  width:90px;flex-shrink:0;
+  width:115px;flex-shrink:0;
   display:flex;flex-direction:column;justify-content:center;
-  gap:4px;padding:6px 5px;
-  border-right:1px solid rgba(200,168,75,.1);
-  background:rgba(0,0,0,.2);
+  gap:5px;padding:6px 6px;
+  border-right:1px solid rgba(200,168,75,.12);
+  background:rgba(0,0,0,.25);
   overflow-y:auto;
 }
 .opp-row{
-  display:flex;align-items:center;gap:5px;
-  background:rgba(0,0,0,.3);border:1px solid rgba(200,168,75,.1);
-  border-radius:7px;padding:4px 5px;
+  display:flex;align-items:center;gap:6px;
+  background:rgba(0,0,0,.35);border:1px solid rgba(200,168,75,.12);
+  border-radius:8px;padding:5px 6px;
+  transition:all .2s;
 }
-.opp-row.active{border-color:rgba(200,168,75,.55);background:rgba(200,168,75,.1);}
-.opp-row.folded{opacity:.3;filter:grayscale(.7);}
-.opp-av-sm{font-size:18px;flex-shrink:0;line-height:1;}
-.opp-info-sm{display:flex;flex-direction:column;gap:1px;min-width:0;}
-.opp-nm-sm{font-size:8px;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50px;}
+.opp-row.active{
+  border-color:var(--gold);background:rgba(200,168,75,.12);
+  box-shadow:0 0 8px rgba(200,168,75,.2);
+}
+.opp-row.folded{opacity:.28;filter:grayscale(.8);}
+.opp-av-sm{font-size:22px;flex-shrink:0;line-height:1;}
+.opp-info-sm{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.opp-nm-sm{
+  font-size:9px;font-family:'Cinzel',serif;color:var(--cream);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 .opp-nm-sm.active{color:var(--gold-light);}
-.opp-stk-sm{font-size:7px;color:var(--gold);}
-.opp-act-sm{font-size:6px;color:rgba(200,168,75,.5);letter-spacing:.5px;}
+.opp-stk-sm{font-size:9px;color:var(--gold);font-family:'Cinzel',serif;}
+.opp-act-sm{
+  font-size:7px;color:rgba(200,168,75,.6);letter-spacing:.5px;
+  background:rgba(0,0,0,.3);border-radius:3px;padding:1px 4px;
+  display:inline-block;align-self:flex-start;
+}
+.opp-act-sm.act-fold{color:#ff9999;}
+.opp-act-sm.act-raise{color:#ffd080;}
+.opp-act-sm.act-call{color:#90ff90;}
+.opp-act-sm.act-check{color:#90c0ff;}
+.opp-act-sm.act-allin{color:#ff90ff;}
 
-/* Center table area */
+/* Mittlere Tischspalte */
 .v3-center{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;padding:6px 4px;
+  gap:6px;padding:4px 4px;
 }
-/* Community cards — larger */
+/* Pot + Status — größer */
+.v3-status-row{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;
+}
+.v3-pot-lbl{
+  font-family:'Cinzel Decorative',cursive;
+  font-size:16px;color:var(--gold-light);
+  text-shadow:0 0 16px rgba(200,168,75,.5);
+  background:rgba(0,0,0,.5);border:1px solid var(--gold-dark);
+  border-radius:12px;padding:4px 14px;
+  letter-spacing:1px;
+}
+.v3-phase-lbl{
+  font-size:10px;color:rgba(200,168,75,.6);letter-spacing:2px;
+  background:rgba(0,0,0,.35);border:1px solid rgba(200,168,75,.2);
+  border-radius:8px;padding:3px 10px;
+}
+/* Community cards */
 .v3-comm-row{display:flex;gap:5px;align-items:center;justify-content:center;}
 .v3-card{
-  width:clamp(32px,8.5vw,50px);height:clamp(46px,12vw,72px);
+  width:clamp(34px,9vw,52px);height:clamp(48px,13vw,75px);
   border-radius:6px;background:var(--cream);
   border:1px solid rgba(0,0,0,.18);
   box-shadow:2px 3px 10px rgba(0,0,0,.65);
@@ -406,18 +424,17 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 .v3-card::before{content:'';position:absolute;inset:3px;border:1px solid rgba(0,0,0,.06);border-radius:4px;}
 .v3-card.back{background:linear-gradient(145deg,#1e3a7a,#0d1f4a);border:1.5px solid var(--gold-dark);}
 .v3-card.back::before{background:repeating-linear-gradient(45deg,rgba(200,168,75,.05) 0px,rgba(200,168,75,.05) 2px,transparent 2px,transparent 8px);}
-.v3-card .vr2{position:absolute;top:3px;left:4px;font-size:clamp(9px,2.3vw,13px);font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;}
-.v3-card .vc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(18px,5vw,28px);}
+.v3-card .vr2{position:absolute;top:3px;left:4px;font-size:clamp(10px,2.5vw,14px);font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;}
+.v3-card .vc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,5.5vw,30px);}
 .v3-card.red .vr2,.v3-card.red .vc{color:var(--red);}
 .v3-card.black .vr2,.v3-card.black .vc{color:#111;}
-.v3-pot-lbl{font-size:10px;color:var(--gold-light);background:rgba(0,0,0,.45);border:1px solid var(--gold-dark);border-radius:10px;padding:3px 12px;}
 /* Hand cards below community */
 .v3-hand-row{display:flex;gap:10px;align-items:center;justify-content:center;}
-.v3-hand-lbl{font-size:7px;color:rgba(200,168,75,.4);letter-spacing:1px;text-align:center;margin-top:-2px;}
+.v3-hand-lbl{font-size:8px;color:rgba(200,168,75,.45);letter-spacing:1px;text-align:center;}
 
-/* Fullscreen button */
+/* Fullscreen button — LEFT side */
 #fs-phone-btn{
-  position:fixed;bottom:50%;right:4px;transform:translateY(50%);z-index:150;
+  position:fixed;top:50%;left:4px;transform:translateY(-50%);z-index:150;
   background:rgba(0,0,0,.7);border:1px solid rgba(200,168,75,.4);border-radius:8px;
   color:rgba(200,168,75,.8);font-size:18px;padding:8px 5px;cursor:pointer;
   display:none;line-height:1;
@@ -653,7 +670,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 
   <div class="view-area">
 
-    <!-- VIEW 1: Karten oben, Aktionen unten (4er Reihe) -->
+    <!-- VIEW 1: Karten links, Buttons rechts (wie View 3) -->
     <div class="view active" id="view-cards">
       <div class="vl">
         <div class="cards-area" id="v1-cards"></div>
@@ -663,12 +680,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
           <span>BB ◈<span id="v1-bb">50</span></span>
         </div>
       </div>
-      <div class="v-actions-bar">
-        <div class="v-abtns" id="v1-btns"></div>
+      <div class="vr">
+        <div class="vbtns" id="v1-btns"></div>
       </div>
     </div>
 
-    <!-- VIEW 2: Peek oben, Aktionen unten -->
+    <!-- VIEW 2: Peek links, Buttons rechts (wie View 3) -->
     <div class="view" id="view-peek">
       <div class="vl" id="peek-top">
         <div class="peek-info">
@@ -694,19 +711,22 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
           </div>
         </div>
       </div>
-      <div class="v-actions-bar">
-        <div class="v-abtns" id="v2-btns"></div>
+      <div class="vr">
+        <div class="vbtns" id="v2-btns"></div>
       </div>
     </div>
 
     <!-- VIEW 3: Spieler links | Tisch+Karten mitte | Aktionen rechts -->
     <div class="view" id="view-table">
-      <!-- Linke Spalte: Spielerliste -->
+      <!-- Linke Spalte: Spielerliste (breiter, besser) -->
       <div class="v3-players" id="v3-opponents"></div>
 
-      <!-- Mitte: Tischkarten + eigene Karten -->
+      <!-- Mitte: Pot + Phase + Tischkarten + eigene Karten -->
       <div class="v3-center">
-        <div class="v3-pot-lbl" id="v3-pot">◈ 0</div>
+        <div class="v3-status-row">
+          <div class="v3-pot-lbl" id="v3-pot">◈ 0</div>
+          <div class="v3-phase-lbl" id="v3-phase">PRE-FLOP</div>
+        </div>
         <div class="v3-comm-row" id="v3-comm"></div>
         <div class="v3-hand-lbl" id="v3-own-lbl">Deine Hand</div>
         <div class="v3-hand-row" id="v3-own-cards"></div>
@@ -833,22 +853,32 @@ function connectSocket(code, name, avatar) {
 
   socket.on('deal-cards', ({ cards }) => {
     myCards = cards;
+    sounds.deal();
   });
 
   socket.on('game-state', (state) => {
     gameState = state;
+    // Community-Karten-Sound
+    const newCount = (state.communityCards || []).filter(Boolean).length;
+    if (window._lastCommCount !== undefined && newCount > window._lastCommCount) {
+      sounds.flip();
+    }
+    window._lastCommCount = newCount;
     handleStateUpdate(state);
   });
 
   socket.on('your-turn', ({ callAmount: ca, validActions: va, minRaise: mr }) => {
     callAmount = ca; validActions = va; minRaise = mr;
     currentBet = ca > 0 ? ca : settings.bigBlind;
+    sounds.yourTurn();
+    startMusic();
     updateActionBars();
     showScreen('game-view');
     setView(currentView);
   });
 
   socket.on('winner', ({ winners, pot }) => {
+    sounds.win();
     showWinner(winners[0]);
   });
 
@@ -858,6 +888,7 @@ function connectSocket(code, name, avatar) {
   });
 
   socket.on('new-game-started', () => {
+    sounds.newRound();
     myCards = []; gameState = null; isMaster = false; myId = null;
     showScreen('join');
   });
@@ -1011,6 +1042,8 @@ function updateGameViews(state, me) {
   document.getElementById('v2-pot').textContent = 'POT: ◈ ' + state.pot;
   document.getElementById('v2-call').textContent = 'CALL: ◈ ' + callAmount;
   document.getElementById('v3-pot').textContent = '◈ ' + state.pot;
+  const phEl = document.getElementById('v3-phase');
+  if (phEl) phEl.textContent = phaseLabel(state.phase);
   // V3
   renderV3(state, me);
 }
@@ -1375,6 +1408,269 @@ setTimeout(() => {
 }, 3000);
 
 // ── NEW GAME handler registered in connectSocket ──────────────────────
+
+// ══════════════════════════════════════════════════════════════════
+// AUDIO SYSTEM — Web Audio API (keine externen Dateien nötig)
+// Poker-Sounds + stimmungsvolle Hintergrundmusik
+// ══════════════════════════════════════════════════════════════════
+let audioCtx = null;
+let musicGain = null;
+let musicPlaying = false;
+let musicNodes = [];
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = 0.18;
+    musicGain.connect(audioCtx.destination);
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+// ── Hilfsfunktionen ──
+function playTone(freq, type, vol, dur, attack, decay) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = type || 'sine';
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + (attack || 0.01));
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + dur + (decay || 0));
+}
+
+function playNoise(dur, vol, filterFreq) {
+  const ctx = getAudioCtx();
+  const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = filterFreq || 800;
+  filter.Q.value = 0.5;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(vol, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  src.start(); src.stop(ctx.currentTime + dur);
+}
+
+// ── POKER SOUNDS ──
+const sounds = {
+  // Karte austeilen — plastisches Klicken + kurzes Rauschen
+  deal() {
+    playNoise(0.06, 0.35, 2400);
+    playTone(1800, 'square', 0.08, 0.05, 0.001, 0.02);
+    setTimeout(() => { playNoise(0.05, 0.25, 2200); playTone(1600,'square',0.06,0.04,0.001); }, 80);
+  },
+  // Chip setzen — dumpfes Klacken
+  chip() {
+    playNoise(0.08, 0.5, 400);
+    playTone(220, 'triangle', 0.3, 0.12, 0.002, 0.05);
+    playTone(180, 'sine',     0.2, 0.15, 0.002);
+  },
+  // Chips schieben (Call/Raise) — mehrere Chips
+  chipStack() {
+    for (let i = 0; i < 4; i++) {
+      setTimeout(() => {
+        playNoise(0.06, 0.35, 350 + i*50);
+        playTone(200 + i*20, 'triangle', 0.2, 0.1, 0.002);
+      }, i * 55);
+    }
+  },
+  // Fold — dumpfes Hinlegen der Karten
+  fold() {
+    playNoise(0.12, 0.3, 600);
+    playTone(280, 'triangle', 0.15, 0.18, 0.005, 0.08);
+    playTone(240, 'sine',     0.08, 0.2,  0.01);
+  },
+  // Check — kurzes Klopfen
+  check() {
+    playNoise(0.04, 0.45, 1200);
+    playTone(320, 'square', 0.12, 0.06, 0.001);
+  },
+  // All-In — dramatisch
+  allIn() {
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        playNoise(0.07, 0.4, 300 + i*40);
+        playTone(180 + i*15, 'triangle', 0.25, 0.12, 0.002);
+      }, i * 40);
+    }
+    setTimeout(() => playTone(440, 'sine', 0.3, 0.5, 0.05), 350);
+  },
+  // Karte umdrehen (Community Card)
+  flip() {
+    playNoise(0.07, 0.3, 1800);
+    playTone(900, 'sine',     0.12, 0.08, 0.003);
+    playTone(600, 'triangle', 0.08, 0.12, 0.005);
+  },
+  // Gewinner — fanfare-artig
+  win() {
+    const melody = [523, 659, 784, 1047];
+    melody.forEach((f, i) => {
+      setTimeout(() => playTone(f, 'sine', 0.4, 0.3, 0.01, 0.1), i * 140);
+    });
+    setTimeout(() => {
+      playTone(1047, 'sine', 0.5, 0.6, 0.02, 0.2);
+      playTone(784,  'sine', 0.3, 0.6, 0.02);
+    }, 600);
+  },
+  // Dein Zug — Aufmerksamkeit
+  yourTurn() {
+    playTone(660, 'sine', 0.3, 0.15, 0.01);
+    setTimeout(() => playTone(880, 'sine', 0.35, 0.2, 0.01), 160);
+  },
+  // Neue Runde
+  newRound() {
+    playTone(392, 'triangle', 0.25, 0.2, 0.01);
+    setTimeout(() => playTone(523, 'triangle', 0.25, 0.2, 0.01), 180);
+  },
+  // Raise
+  raise() {
+    sounds.chipStack();
+    setTimeout(() => playTone(550, 'sine', 0.18, 0.2, 0.02), 280);
+  },
+};
+
+// ── HINTERGRUNDMUSIK — Stimmungsvolle Jazz-Lounge-Akkorde ──
+function startMusic() {
+  if (musicPlaying) return;
+  musicPlaying = true;
+  const ctx = getAudioCtx();
+
+  // Jazz-Akkordfolge: Am7 → Dm7 → G7 → Cmaj7 (looping)
+  const chords = [
+    [220, 261.6, 329.6, 392],    // Am7
+    [146.8, 174.6, 220, 261.6],  // Dm7
+    [196, 246.9, 293.7, 349.2],  // G7
+    [130.8, 164.8, 196, 246.9],  // Cmaj7
+  ];
+
+  let step = 0;
+  const bpm = 60;
+  const beatDur = 60 / bpm;
+
+  function playChord(freqs, time) {
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const detune = (i % 2 === 0) ? -3 : 3;
+      osc.type = i === 0 ? 'triangle' : 'sine';
+      osc.frequency.value = freq;
+      osc.detune.value = detune;
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.06 / (i + 1), time + 0.3);
+      gain.gain.setValueAtTime(0.06 / (i + 1), time + beatDur * 3.5);
+      gain.gain.linearRampToValueAtTime(0, time + beatDur * 4);
+      osc.connect(gain); gain.connect(musicGain);
+      osc.start(time); osc.stop(time + beatDur * 4.2);
+      musicNodes.push(osc);
+    });
+  }
+
+  // Walking bass
+  function playBass(freq, time) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq / 2;
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(0.14, time + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + beatDur * 1.8);
+    osc.connect(gain); gain.connect(musicGain);
+    osc.start(time); osc.stop(time + beatDur * 2);
+    musicNodes.push(osc);
+  }
+
+  // Hi-hat feel (soft noise bursts)
+  function playHat(time, vol) {
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.03), ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass'; filter.frequency.value = 6000;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(vol, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
+    src.connect(filter); filter.connect(gain); gain.connect(musicGain);
+    src.start(time); src.stop(time + 0.035);
+    musicNodes.push(src);
+  }
+
+  function scheduleLoop() {
+    if (!musicPlaying) return;
+    const now = ctx.currentTime;
+    const chord = chords[step % chords.length];
+
+    // Akkord
+    playChord(chord, now);
+    // Bass auf Beat 1 + 3
+    playBass(chord[0], now);
+    playBass(chord[1] * 0.9, now + beatDur * 2);
+    // Hi-hats auf jedem Beat
+    for (let b = 0; b < 4; b++) {
+      playHat(now + b * beatDur, b % 2 === 0 ? 0.08 : 0.04);
+    }
+
+    step++;
+    setTimeout(scheduleLoop, beatDur * 4 * 1000 - 80);
+  }
+
+  scheduleLoop();
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  musicNodes.forEach(n => { try { n.stop(); } catch(e){} });
+  musicNodes = [];
+}
+
+// ── Sound-Triggers: Action-Buttons ──
+// Wrap doAction to play sounds
+const _doAction = doAction;
+window.doAction = function(action, amount) {
+  getAudioCtx(); // unlock on interaction
+  switch(action) {
+    case 'fold':  sounds.fold();      break;
+    case 'check': sounds.check();     break;
+    case 'call':  sounds.chipStack(); break;
+    case 'raise': sounds.raise();     break;
+    case 'allIn': sounds.allIn();     break;
+  }
+  _doAction(action, amount);
+};
+
+// ── Sound-Triggers: Socket-Events ──
+// Hook into socket events after connect
+function attachAudioHooks() {
+  if (!socket) return;
+  socket.on('your-turn', () => { sounds.yourTurn(); startMusic(); });
+  socket.on('new-game-started', () => { sounds.newRound(); startMusic(); });
+  socket.on('game-state', (state) => {
+    // Karte umdrehen wenn neue Community-Karten erscheinen
+    if (window._lastCommCount !== undefined) {
+      const newCount = (state.communityCards || []).filter(Boolean).length;
+      if (newCount > window._lastCommCount) sounds.flip();
+    }
+    window._lastCommCount = (state.communityCards || []).filter(Boolean).length;
+  });
+  socket.on('winner', () => { sounds.win(); });
+  socket.on('cards-dealt', () => { sounds.deal(); });
+}
+
+// Start music on first game interaction
+document.addEventListener('touchstart', () => { if (gameState) startMusic(); }, { passive: true, once: true });
+document.addEventListener('click', () => { if (gameState) startMusic(); }, { once: true });
 
 // Service Worker
 if ('serviceWorker' in navigator) {
