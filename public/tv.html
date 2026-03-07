@@ -22,21 +22,24 @@ body{background:repeating-linear-gradient(91deg,transparent,transparent 80px,rgb
 .screen.active{display:flex;}
 
 /* TOPBAR */
-.topbar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:10px 24px 8px;background:repeating-linear-gradient(91deg,transparent,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 56px),linear-gradient(180deg,#2a1008 0%,#3d1f0a 100%);border-bottom:2px solid var(--gold-dark);box-shadow:0 3px 20px rgba(0,0,0,.6);position:relative;z-index:10;}
-.topbar::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dark) 20%,var(--gold-light) 50%,var(--gold-dark) 80%,transparent);opacity:.5;}
-.logo{font-family:'Cinzel Decorative',cursive;font-size:clamp(14px,2vw,22px);color:var(--gold-light);text-shadow:0 0 20px rgba(200,168,75,.5);letter-spacing:3px;}
-.pill{background:rgba(0,0,0,.45);border:1px solid var(--gold-dark);border-radius:8px;padding:5px 14px;text-align:center;}
-.pill .lbl{font-size:8px;color:rgba(200,168,75,.6);letter-spacing:1.5px;text-transform:uppercase;display:block;}
-.pill .val{font-size:clamp(11px,1.2vw,15px);color:var(--gold-light);}
-.phase-badge{background:linear-gradient(135deg,var(--gold-dark),#7a5c20);border-radius:6px;padding:4px 14px;font-size:clamp(9px,.9vw,11px);color:var(--cream);letter-spacing:2px;text-transform:uppercase;}
-.turn-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(200,168,75,.12);border:1px solid var(--gold-dark);border-radius:12px;padding:4px 12px;font-size:clamp(9px,.9vw,11px);color:var(--gold);letter-spacing:1px;}
-.turn-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:blink 1.2s ease-in-out infinite;display:inline-block;}
+.topbar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 32px 12px;background:repeating-linear-gradient(91deg,transparent,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 56px),linear-gradient(180deg,#2a1008 0%,#3d1f0a 100%);border-bottom:3px solid var(--gold-dark);box-shadow:0 4px 28px rgba(0,0,0,.7);position:relative;z-index:10;}
+.topbar::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dark) 20%,var(--gold-light) 50%,var(--gold-dark) 80%,transparent);opacity:.6;}
+.logo{font-family:'Cinzel Decorative',cursive;font-size:clamp(18px,2.2vw,28px);color:var(--gold-light);text-shadow:0 0 24px rgba(200,168,75,.6);letter-spacing:4px;}
+.pill{background:rgba(0,0,0,.5);border:1.5px solid var(--gold-dark);border-radius:10px;padding:7px 20px;text-align:center;min-width:90px;}
+.pill .lbl{font-size:clamp(9px,.8vw,11px);color:rgba(200,168,75,.65);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:2px;}
+.pill .val{font-size:clamp(18px,1.8vw,26px);color:var(--gold-light);font-weight:700;}
+.blinds-box{background:rgba(0,0,0,.4);border:1.5px solid rgba(200,168,75,.25);border-radius:10px;padding:6px 16px;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.blinds-lbl{font-size:clamp(8px,.7vw,10px);color:rgba(200,168,75,.5);letter-spacing:2px;text-transform:uppercase;}
+.blinds-val{font-size:clamp(16px,1.6vw,22px);color:var(--cream);letter-spacing:2px;}
+.phase-badge{background:linear-gradient(135deg,var(--gold-dark),#7a5c20);border-radius:8px;padding:7px 20px;font-size:clamp(13px,1.3vw,18px);color:var(--cream);letter-spacing:3px;text-transform:uppercase;font-weight:700;}
+.turn-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(200,168,75,.12);border:1.5px solid var(--gold-dark);border-radius:14px;padding:7px 18px;font-size:clamp(13px,1.3vw,18px);color:var(--gold);letter-spacing:1.5px;}
+.turn-dot{width:11px;height:11px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);animation:blink 1.2s ease-in-out infinite;display:inline-block;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
 
 /* BOTTOMBAR */
-.bottombar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:7px 24px;background:repeating-linear-gradient(91deg,transparent,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 56px),linear-gradient(180deg,#3d1f0a 0%,#2a1008 100%);border-top:2px solid var(--gold-dark);position:relative;z-index:10;font-size:clamp(9px,.85vw,11px);color:rgba(200,168,75,.55);letter-spacing:1px;}
+.bottombar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:9px 32px;background:repeating-linear-gradient(91deg,transparent,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 56px),linear-gradient(180deg,#3d1f0a 0%,#2a1008 100%);border-top:2px solid var(--gold-dark);position:relative;z-index:10;font-size:clamp(11px,1vw,14px);color:rgba(200,168,75,.6);letter-spacing:1.5px;}
 .bottombar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dark) 20%,var(--gold-light) 50%,var(--gold-dark) 80%,transparent);opacity:.5;}
-.bottombar .val{color:var(--cream);}
+.bottombar .val{color:var(--cream);font-size:clamp(13px,1.1vw,16px);}
 
 /* LOBBY */
 #lobby{background:radial-gradient(ellipse at 50% 60%,#1e5535 0%,#0a1c10 100%);}
@@ -85,7 +88,14 @@ body{background:repeating-linear-gradient(91deg,transparent,transparent 80px,rgb
 
 /* POT */
 .pot-area{position:absolute;left:50%;top:63%;transform:translate(-50%,-50%);z-index:5;}
-.pot-display{background:rgba(0,0,0,.55);border:1px solid var(--gold-dark);border-radius:20px;padding:clamp(3px,.4vh,6px) clamp(10px,1.2vw,18px);font-size:clamp(10px,1vw,14px);letter-spacing:1.5px;color:var(--gold-light);text-shadow:0 0 12px rgba(200,168,75,.5);}
+.pot-display{
+  background:rgba(0,0,0,.65);border:2px solid var(--gold-dark);border-radius:24px;
+  padding:clamp(6px,.8vh,12px) clamp(18px,2.2vw,32px);
+  font-family:'Cinzel Decorative',cursive;
+  font-size:clamp(18px,2.2vw,32px);letter-spacing:2px;
+  color:var(--gold-light);text-shadow:0 0 18px rgba(200,168,75,.6);
+  box-shadow:0 0 0 1px rgba(200,168,75,.2),0 4px 20px rgba(0,0,0,.6);
+}
 
 /* SEATS */
 .seat{position:absolute;z-index:8;display:flex;flex-direction:column;align-items:center;gap:clamp(3px,.4vh,6px);}
@@ -106,7 +116,7 @@ body{background:repeating-linear-gradient(91deg,transparent,transparent 80px,rgb
 .mini-cards{display:flex;gap:2px;position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);}
 .mc{width:clamp(10px,1.1vw,16px);height:clamp(14px,1.5vw,22px);border-radius:2px;background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1px solid var(--gold-dark);}
 .mc.revealed{background:var(--cream);border-color:rgba(0,0,0,.2);}
-.bet-chip{position:absolute;font-size:clamp(7px,.75vw,10px);color:#ffd700;background:rgba(0,0,0,.65);border:1px solid rgba(200,168,75,.35);border-radius:10px;padding:2px 6px;white-space:nowrap;z-index:6;}
+.bet-chip{position:absolute;font-size:clamp(12px,1.2vw,18px);font-family:'Cinzel',serif;font-weight:700;color:#ffd700;background:rgba(0,0,0,.75);border:2px solid rgba(200,168,75,.5);border-radius:14px;padding:4px 12px;white-space:nowrap;z-index:6;box-shadow:0 2px 8px rgba(0,0,0,.6);}
 
 /* WINNER OVERLAY */
 #winner-overlay{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);align-items:center;justify-content:center;flex-direction:column;gap:16px;}
@@ -192,8 +202,11 @@ body{background:repeating-linear-gradient(91deg,transparent,transparent 80px,rgb
 <div id="game" class="screen">
   <div class="topbar">
     <div class="logo">&#9824; Royal Poker</div>
-    <div style="display:flex;gap:12px;align-items:center;">
-      <div style="font-size:10px;color:rgba(200,168,75,.5);letter-spacing:1px;">SB:&#9672;<span id="t-sb">25</span> &middot; BB:&#9672;<span id="t-bb">50</span></div>
+    <div style="display:flex;gap:14px;align-items:center;">
+      <div class="blinds-box">
+        <div class="blinds-lbl">Small / Big Blind</div>
+        <div class="blinds-val">&#9672;&nbsp;<span id="t-sb">25</span> &nbsp;/&nbsp; &#9672;&nbsp;<span id="t-bb">50</span></div>
+      </div>
       <div class="pill"><span class="lbl">Pot</span><span class="val" id="t-pot">&#9672; 0</span></div>
       <div class="pill"><span class="lbl">Hand</span><span class="val" id="t-hand">#1</span></div>
       <div class="phase-badge" id="t-phase">PREFLOP</div>
@@ -265,13 +278,167 @@ body{background:repeating-linear-gradient(91deg,transparent,transparent 80px,rgb
   <div class="countdown" id="win-countdown">N&#228;chste Hand in 5...</div>
 </div>
 
+<!-- YouTube Hintergrundmusik (Audio only, hidden) -->
+<div id="yt-player" style="position:fixed;bottom:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
+
 <div id="fs-hint" onclick="enterFullscreen()">&#x26F6; Vollbild</div>
 
 <script>
+// ══════════════════════════════════════════════════════════════
+// YOUTUBE BACKGROUND MUSIC
+// Video ID aus https://www.youtube.com/watch?v=XC7VlvdhKyA
+// ══════════════════════════════════════════════════════════════
+var ytPlayer = null;
+var ytReady = false;
+var ytStartPending = false;
+
+// YouTube IFrame API laden
+(function() {
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+
+function onYouTubeIframeAPIReady() {
+  ytPlayer = new YT.Player('yt-player', {
+    videoId: 'XC7VlvdhKyA',
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      loop: 1,
+      playlist: 'XC7VlvdhKyA',
+      mute: 0,
+      rel: 0,
+      modestbranding: 1,
+    },
+    events: {
+      onReady: function(e) {
+        ytReady = true;
+        e.target.setVolume(35);
+        if (ytStartPending) { e.target.playVideo(); ytStartPending = false; }
+      },
+      onStateChange: function(e) {
+        // Loop: wenn Video endet, neu starten
+        if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
+      }
+    }
+  });
+}
+
+function startYTMusic() {
+  if (!ytReady) { ytStartPending = true; return; }
+  try { ytPlayer.playVideo(); } catch(e) {}
+}
+
+// Musik starten beim ersten Klick (Browser-Policy)
+var musicStarted = false;
+function tryStartMusic() {
+  if (musicStarted) return;
+  musicStarted = true;
+  startYTMusic();
+}
+document.addEventListener('click',      tryStartMusic, { once: true });
+document.addEventListener('keydown',    tryStartMusic, { once: true });
+document.addEventListener('touchstart', tryStartMusic, { once: true, passive: true });
+// Auch beim ersten Game-State automatisch versuchen
+function tryStartMusicAuto() { if (!musicStarted) { musicStarted = true; startYTMusic(); } }
+
+// ══════════════════════════════════════════════════════════════
+// POKER SOUND EFFECTS — Web Audio API
+// ══════════════════════════════════════════════════════════════
+var tvAudioCtx = null;
+
+function getTvAudio() {
+  if (!tvAudioCtx) tvAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (tvAudioCtx.state === 'suspended') tvAudioCtx.resume();
+  return tvAudioCtx;
+}
+
+function tvTone(freq, type, vol, dur, attack) {
+  var ctx = getTvAudio();
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + (attack || 0.01));
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  osc.start(); osc.stop(ctx.currentTime + dur + 0.05);
+}
+
+function tvNoise(dur, vol, filterFreq) {
+  var ctx = getTvAudio();
+  var buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+  var d = buf.getChannelData(0);
+  for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  var src = ctx.createBufferSource();
+  src.buffer = buf;
+  var filt = ctx.createBiquadFilter();
+  filt.type = 'bandpass'; filt.frequency.value = filterFreq || 800; filt.Q.value = 0.5;
+  var gain = ctx.createGain();
+  gain.gain.setValueAtTime(vol, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+  src.start(); src.stop(ctx.currentTime + dur + 0.02);
+}
+
+var tvSounds = {
+  deal: function() {
+    tvNoise(0.07, 0.4, 2600);
+    tvTone(1900, 'square', 0.07, 0.05);
+    setTimeout(function(){ tvNoise(0.06, 0.3, 2300); }, 90);
+    setTimeout(function(){ tvNoise(0.06, 0.3, 2100); }, 180);
+  },
+  chip: function() {
+    tvNoise(0.09, 0.55, 420);
+    tvTone(230, 'triangle', 0.32, 0.14, 0.003);
+    tvTone(190, 'sine', 0.18, 0.18, 0.003);
+  },
+  chipStack: function() {
+    for (var i = 0; i < 5; i++) {
+      (function(j){ setTimeout(function(){
+        tvNoise(0.07, 0.4, 380 + j * 40);
+        tvTone(210 + j * 18, 'triangle', 0.22, 0.12, 0.003);
+      }, j * 60); })(i);
+    }
+  },
+  fold: function() {
+    tvNoise(0.14, 0.35, 650);
+    tvTone(270, 'triangle', 0.18, 0.2, 0.006);
+    tvTone(230, 'sine', 0.1, 0.22, 0.01);
+  },
+  flip: function() {
+    tvNoise(0.08, 0.35, 2000);
+    tvTone(950, 'sine', 0.14, 0.09, 0.003);
+    tvTone(650, 'triangle', 0.09, 0.13, 0.005);
+  },
+  win: function() {
+    var mel = [523, 659, 784, 1047, 1319];
+    mel.forEach(function(f, i){
+      setTimeout(function(){ tvTone(f, 'sine', 0.45, 0.35, 0.01); }, i * 130);
+    });
+    setTimeout(function(){
+      tvTone(1319, 'sine', 0.55, 0.7, 0.02);
+      tvTone(1047, 'sine', 0.35, 0.7, 0.02);
+      tvTone(784,  'sine', 0.25, 0.7, 0.02);
+    }, 700);
+  },
+  blind: function() {
+    tvTone(440, 'sine', 0.28, 0.18, 0.01);
+    setTimeout(function(){ tvTone(550, 'sine', 0.32, 0.22, 0.01); }, 160);
+  },
+  newRound: function() {
+    tvTone(392, 'triangle', 0.25, 0.22);
+    setTimeout(function(){ tvTone(494, 'triangle', 0.28, 0.2); }, 200);
+    setTimeout(function(){ tvTone(587, 'sine', 0.32, 0.28); }, 380);
+  },
+};
+
 // ── FULLSCREEN ───────────────────────────────────────────────────────
 function enterFullscreen() {
-  const el = document.documentElement;
-  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  var el = document.documentElement;
+  var fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
   if (fn) fn.call(el).catch(function(){});
   document.getElementById('fs-hint').style.display = 'none';
 }
@@ -332,14 +499,32 @@ socket.on('player-joined', function(data) {
   document.getElementById('player-count').textContent = list.children.length;
 });
 
-socket.on('game-state', function(state) { gameState = state; renderGame(state); });
+socket.on('game-state', function(state) {
+  gameState = state;
+  tryStartMusicAuto();
+  // Community card flip sound
+  var newCount = (state.communityCards || []).filter(Boolean).length;
+  if (lastCommCount >= 0 && newCount > lastCommCount) {
+    for (var i = lastCommCount; i < newCount; i++) {
+      (function(j){ setTimeout(function(){ tvSounds.flip(); }, j * 110); })(i - lastCommCount);
+    }
+  }
+  if (lastCommCount < 0 && newCount === 0) {
+    // New hand dealt
+    setTimeout(function(){ tvSounds.deal(); }, 200);
+    setTimeout(function(){ tvSounds.deal(); }, 350);
+  }
+  renderGame(state);
+});
 
 socket.on('winner', function(data) {
+  tvSounds.win();
   if (data.winners && data.winners[0]) showWinner(data.winners[0]);
 });
 
 socket.on('blind-raise', function(data) {
-  showToast('Blinds: ' + data.small + ' / ' + data.big);
+  tvSounds.blind();
+  showToast('↑ Blinds erhöht: ◈' + data.small + ' / ◈' + data.big);
 });
 
 socket.on('game-over', function(data) {
@@ -347,6 +532,7 @@ socket.on('game-over', function(data) {
 });
 
 socket.on('new-game-started', function() {
+  tvSounds.newRound();
   document.getElementById('avatar-list').innerHTML = '';
   document.getElementById('player-count').textContent = '0';
   document.getElementById('qr-container').innerHTML = '';
@@ -388,8 +574,7 @@ function renderGame(state) {
 }
 
 function renderCommunity(cards) {
-  // Only rebuild when the number of revealed cards changes to avoid re-animating
-  var newCount = cards.length;
+  var newCount = cards.filter(Boolean).length;
   if (newCount === lastCommCount) return;
   lastCommCount = newCount;
 
