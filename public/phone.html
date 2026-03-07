@@ -1170,12 +1170,18 @@ function peekEnd_(e) {
   setTimeout(()=>document.getElementById('peek-hint').style.opacity='1', 800);
 }
 
-document.addEventListener('touchstart', peekStart_, { passive: false });
-document.addEventListener('touchmove', peekMove_, { passive: false });
-document.addEventListener('touchend', peekEnd_);
-document.addEventListener('mousedown', peekStart_);
-document.addEventListener('mousemove', peekMove_);
-document.addEventListener('mouseup', peekEnd_);
+// Peek listeners only on peek-top area — NOT on document
+// This prevents blocking action buttons and the view-switch button
+const peekTopEl = document.getElementById('peek-top');
+if (peekTopEl) {
+  peekTopEl.addEventListener('touchstart', peekStart_, { passive: false });
+  peekTopEl.addEventListener('mousedown',  peekStart_);
+}
+// Move and end on document so peek works even if finger slides outside peek-top
+document.addEventListener('touchmove', (e) => { if (peekActive) peekMove_(e); }, { passive: false });
+document.addEventListener('touchend',  (e) => { if (peekActive) peekEnd_(e);  });
+document.addEventListener('mousemove', (e) => { if (peekActive) peekMove_(e); });
+document.addEventListener('mouseup',   (e) => { if (peekActive) peekEnd_(e);  });
 
 // ── Winner ────────────────────────────────────────────────────────────
 function showWinner(w) {
