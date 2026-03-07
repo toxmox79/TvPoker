@@ -216,160 +216,161 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 .hand-card.hidden::after{content:'♠';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;color:rgba(200,168,75,.18);}
 .hand-card.hidden::before{background:repeating-linear-gradient(45deg,rgba(200,168,75,.05) 0px,rgba(200,168,75,.05) 2px,transparent 2px,transparent 8px);}
 
-.info-strip{
-  display:flex;align-items:center;justify-content:center;gap:12px;
-  padding:4px 12px;font-size:9px;color:rgba(200,168,75,.5);letter-spacing:1px;
-}
-.pot-pill{background:rgba(0,0,0,.45);border:1px solid var(--gold-dark);border-radius:12px;padding:3px 12px;font-size:10px;color:var(--gold-light);}
+/* ══════════════════════════════════
+   GAME VIEWS — LANDSCAPE LAYOUT
+   Left: content area | Right: action panel
+══════════════════════════════════ */
+.view{display:none;position:absolute;inset:0;flex-direction:row;}
+.view.active{display:flex;}
 
-/* VIEW 2 – Peek/Swipe */
-#view-peek{
-  background:radial-gradient(ellipse at 50% 70%,var(--felt-light) 0%,var(--felt) 45%,var(--felt-dark) 100%);
+/* ── LEFT PANEL (cards / table) ── */
+.vl{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
+
+/* ── RIGHT PANEL (buttons + knob) ── */
+.vr{
+  width:120px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  background:
+    repeating-linear-gradient(180deg,transparent,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 56px),
+    linear-gradient(90deg,#2a1008,#3d1f0a);
+  border-left:2px solid var(--gold-dark);
+  padding:8px 6px 10px;gap:5px;
 }
-.peek-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:16px;gap:10px;position:relative;}
-.peek-hint{display:flex;flex-direction:column;align-items:center;gap:4px;transition:opacity .3s;}
-.peek-hint span{font-family:'IM Fell English',serif;font-style:italic;font-size:10px;color:rgba(200,168,75,.45);letter-spacing:1px;}
+.vr::before{content:'';position:absolute;right:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,var(--gold-dark) 20%,var(--gold-light) 50%,var(--gold-dark) 80%,transparent);opacity:.4;}
+
+/* Action buttons — vertical stack */
+.vbtns{display:flex;flex-direction:column;gap:5px;width:100%;}
+.abtn{
+  width:100%;height:38px;border:none;border-radius:7px;cursor:pointer;
+  font-family:'Cinzel',serif;font-weight:700;font-size:9px;letter-spacing:.5px;
+  position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:1px;transition:transform .1s,box-shadow .1s;
+}
+.abtn:active{transform:scale(.95);}
+.abtn::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,transparent 50%);pointer-events:none;}
+.abtn .a-icon{font-size:13px;line-height:1;}
+.abtn .a-lbl{font-size:7px;letter-spacing:.8px;}
+.abtn.fold {background:linear-gradient(180deg,#7a1a1a,#4a0f0f);color:#ffb3b3;border:1px solid #9a2a2a;box-shadow:0 3px 0 #2a0808;}
+.abtn.check{background:linear-gradient(180deg,#1a4a7a,#0f2a4a);color:#b3d4ff;border:1px solid #2a5a9a;box-shadow:0 3px 0 #081828;}
+.abtn.call {background:linear-gradient(180deg,#2a6a2a,#1a3a1a);color:#b3ffb3;border:1px solid #3a8a3a;box-shadow:0 3px 0 #081808;}
+.abtn.raise{background:linear-gradient(180deg,#8a6a10,#5a4008);color:#ffe090;border:1px solid var(--gold);box-shadow:0 3px 0 #2a1a04;}
+.abtn.allin{background:linear-gradient(180deg,#8a1a8a,#4a0a4a);color:#ffb3ff;border:1px solid #aa3aaa;box-shadow:0 3px 0 #280828;}
+.abtn:disabled{opacity:.3;pointer-events:none;}
+
+/* ── ROTARY KNOB for Raise ── */
+.knob-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;
+}
+.knob-lbl{font-size:7px;color:rgba(200,168,75,.5);letter-spacing:1px;text-transform:uppercase;}
+.knob-val{font-size:9px;color:var(--gold-light);background:rgba(0,0,0,.5);border:1px solid var(--gold-dark);border-radius:5px;padding:2px 4px;min-width:60px;text-align:center;}
+.knob{
+  width:64px;height:64px;border-radius:50%;position:relative;cursor:grab;
+  background:radial-gradient(circle at 35% 30%,#5a3010,#2a1008);
+  border:2px solid var(--gold-dark);
+  box-shadow:0 4px 12px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(200,168,75,.1);
+  touch-action:none;user-select:none;
+}
+.knob::before{
+  content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
+  width:4px;height:14px;border-radius:2px;
+  background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));
+  box-shadow:0 0 4px rgba(200,168,75,.6);
+  transform-origin:2px 26px;
+}
+.knob-notch{
+  position:absolute;top:6px;left:50%;
+  width:4px;height:14px;border-radius:2px;
+  background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));
+  box-shadow:0 0 6px rgba(200,168,75,.7);
+  transform-origin:2px 26px;transform:translateX(-50%);
+}
+
+/* VIEW 1 — big cards view */
+#view-cards{background:radial-gradient(ellipse at 35% 50%,var(--felt-light) 0%,var(--felt) 45%,var(--felt-dark) 100%);}
+.cards-area{display:flex;align-items:center;justify-content:center;gap:16px;flex:1;padding:8px;}
+.info-strip{display:flex;align-items:center;justify-content:center;gap:10px;padding:4px 8px;font-size:9px;color:rgba(200,168,75,.5);letter-spacing:1px;}
+.pot-pill{background:rgba(0,0,0,.45);border:1px solid var(--gold-dark);border-radius:12px;padding:3px 10px;font-size:10px;color:var(--gold-light);}
+
+/* VIEW 2 — peek/swipe */
+#view-peek{background:radial-gradient(ellipse at 35% 50%,var(--felt-light) 0%,var(--felt) 45%,var(--felt-dark) 100%);}
+.peek-top{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;position:relative;padding:8px;touch-action:none;
+}
+.peek-info{position:absolute;top:8px;left:0;right:0;display:flex;justify-content:center;gap:10px;}
+.peek-hint{display:flex;flex-direction:column;align-items:center;gap:4px;transition:opacity .3s;pointer-events:none;}
+.peek-hint span{font-family:'IM Fell English',serif;font-style:italic;font-size:9px;color:rgba(200,168,75,.45);letter-spacing:1px;}
 .hint-arrows{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.ha{width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:8px solid rgba(200,168,75,.4);animation:ap 1.4s ease-in-out infinite;}
+.ha{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:7px solid rgba(200,168,75,.4);animation:ap 1.4s ease-in-out infinite;}
 .ha:nth-child(2){animation-delay:.18s;opacity:.55;}
 .ha:nth-child(3){animation-delay:.36s;opacity:.28;}
 @keyframes ap{0%,100%{opacity:.18;}60%{opacity:1;}}
+.peek-pair{display:flex;gap:16px;position:relative;}
+.peek-wrap{width:clamp(80px,22vh,120px);height:clamp(116px,32vh,174px);position:relative;}
+.pk-back{position:absolute;inset:0;border-radius:8px;background:linear-gradient(145deg,#1e3a7a,#0d1f4a);border:2px solid var(--gold-dark);box-shadow:3px 5px 16px rgba(0,0,0,.7);overflow:hidden;z-index:2;}
+.pk-back::before{content:'';position:absolute;inset:5px;border:1px solid rgba(200,168,75,.3);border-radius:4px;background:repeating-linear-gradient(45deg,rgba(200,168,75,.06) 0px,rgba(200,168,75,.06) 2px,transparent 2px,transparent 8px);}
+.pk-back::after{content:'♠';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;color:rgba(200,168,75,.15);}
+.pk-front{position:absolute;inset:0;border-radius:8px;background:var(--cream);border:1.5px solid rgba(0,0,0,.15);box-shadow:3px 5px 16px rgba(0,0,0,.5);overflow:hidden;z-index:1;}
+.pk-front::before{content:'';position:absolute;inset:4px;border:1px solid rgba(0,0,0,.07);border-radius:5px;}
+.pk-front .hc-tl{top:5px;left:6px;font-size:clamp(11px,3vh,16px);}
+.pk-front .hc-c{font-size:clamp(30px,9vh,46px);}
+.pk-front .hc-br{bottom:5px;right:6px;font-size:clamp(11px,3vh,16px);}
+.peek-shadow{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:70%;height:7px;border-radius:50%;background:rgba(0,0,0,.4);filter:blur(3px);transition:all .1s;}
 
-.peek-pair{display:flex;gap:24px;position:relative;}
-.peek-wrap{width:clamp(120px,34vw,160px);height:clamp(175px,50vw,232px);position:relative;}
-/* Back card (slides down when swiping) */
-.pk-back{
-  position:absolute;inset:0;border-radius:9px;
-  background:linear-gradient(145deg,#1e3a7a,#0d1f4a);
-  border:2px solid var(--gold-dark);
-  box-shadow:3px 5px 16px rgba(0,0,0,.7);
-  overflow:hidden;z-index:2;
-}
-.pk-back::before{content:'';position:absolute;inset:5px;border:1px solid rgba(200,168,75,.3);border-radius:5px;background:repeating-linear-gradient(45deg,rgba(200,168,75,.06) 0px,rgba(200,168,75,.06) 2px,transparent 2px,transparent 8px);}
-.pk-back::after{content:'♠';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;color:rgba(200,168,75,.15);}
-/* Front card (revealed below) */
-.pk-front{
-  position:absolute;inset:0;border-radius:9px;
-  background:var(--cream);border:1.5px solid rgba(0,0,0,.15);
-  box-shadow:3px 5px 16px rgba(0,0,0,.5);
-  overflow:hidden;z-index:1;
-}
-.pk-front::before{content:'';position:absolute;inset:4px;border:1px solid rgba(0,0,0,.07);border-radius:6px;}
-.pk-front .hc-tl{top:5px;left:6px;font-size:clamp(12px,3.5vw,18px);}
-.pk-front .hc-c{font-size:clamp(36px,10vw,50px);}
-.pk-front .hc-br{bottom:5px;right:6px;font-size:clamp(12px,3.5vw,18px);}
-.peek-shadow{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:70%;height:8px;border-radius:50%;background:rgba(0,0,0,.4);filter:blur(4px);transition:all .1s;}
-
-/* VIEW 3 – Table overview */
-#view-table{background:radial-gradient(ellipse at 50% 50%,var(--felt-light) 0%,var(--felt) 40%,#0a1c10 100%);}
+/* VIEW 3 — table overview */
+#view-table{background:radial-gradient(ellipse at 35% 50%,var(--felt-light) 0%,var(--felt) 40%,#0a1c10 100%);}
 .table-mini{flex:1;position:relative;overflow:hidden;}
 .mini-oval{
-  position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);
-  width:72%;aspect-ratio:1.7;border-radius:50%;
+  position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  width:88%;aspect-ratio:1.6;border-radius:50%;
   background:radial-gradient(var(--felt-light) 0%,var(--felt) 60%,#0d3020 100%);
-  border:4px solid var(--wood-light);
-  box-shadow:0 0 0 2px var(--gold-dark),0 6px 24px rgba(0,0,0,.8);
+  border:3px solid var(--wood-light);
+  box-shadow:0 0 0 1px var(--gold-dark),0 4px 20px rgba(0,0,0,.8);
 }
-.comm-mini{
-  position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
-  display:flex;gap:3px;z-index:5;
-}
-.mini-card{width:clamp(16px,4.5vw,22px);height:clamp(23px,6.5vw,32px);border-radius:3px;background:var(--cream);border:1px solid rgba(0,0,0,.15);box-shadow:1px 2px 5px rgba(0,0,0,.5);position:relative;}
+.comm-mini{position:absolute;left:50%;top:35%;transform:translate(-50%,-50%);display:flex;gap:3px;z-index:5;}
+.mini-card{width:clamp(18px,4vh,26px);height:clamp(26px,6vh,38px);border-radius:3px;background:var(--cream);border:1px solid rgba(0,0,0,.15);box-shadow:1px 2px 4px rgba(0,0,0,.5);position:relative;}
 .mini-card.back{background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1.5px solid var(--gold-dark);opacity:.6;}
-.mini-card .r{position:absolute;top:1px;left:2px;font-size:clamp(5px,1.4vw,7px);font-family:'IM Fell English',serif;font-weight:700;line-height:1;}
-
-.pot-mini{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);z-index:5;}
+.mini-card .r{position:absolute;top:1px;left:2px;font-size:clamp(5px,1.3vh,8px);font-family:'IM Fell English',serif;font-weight:700;line-height:1;}
+.pot-mini{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);z-index:5;}
 .opp-seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:6;transform:translate(-50%,-50%);}
-.opp-av{width:clamp(28px,8vw,36px);height:clamp(28px,8vw,36px);border-radius:50%;font-size:clamp(14px,4vw,18px);display:flex;align-items:center;justify-content:center;background:radial-gradient(135deg,#4a2510,#2a1008);border:1.5px solid var(--gold-dark);box-shadow:0 2px 8px rgba(0,0,0,.6);position:relative;}
-.opp-av.active{border-color:var(--gold-light);box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 10px rgba(200,168,75,.4);}
-.opp-av.folded{opacity:.35;filter:grayscale(.8);}
-.opp-nm{font-size:clamp(7px,1.8vw,8px);background:rgba(0,0,0,.55);border:1px solid rgba(200,168,75,.2);border-radius:3px;padding:1px 5px;white-space:nowrap;}
+.opp-av{width:clamp(26px,6vh,36px);height:clamp(26px,6vh,36px);border-radius:50%;font-size:clamp(13px,3vh,18px);display:flex;align-items:center;justify-content:center;background:radial-gradient(135deg,#4a2510,#2a1008);border:1.5px solid var(--gold-dark);box-shadow:0 2px 6px rgba(0,0,0,.6);}
+.opp-av.active{border-color:var(--gold-light);box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 8px rgba(200,168,75,.4);}
+.opp-av.folded{opacity:.3;filter:grayscale(.8);}
+.opp-nm{font-size:clamp(6px,1.4vh,8px);background:rgba(0,0,0,.6);border:1px solid rgba(200,168,75,.2);border-radius:3px;padding:1px 4px;white-space:nowrap;}
 .opp-nm.active{color:var(--gold-light);}
-.opp-stk{font-size:clamp(6px,1.6vw,7px);color:var(--gold);white-space:nowrap;}
-
-.own-cards-mini{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:7;}
-.own-card-mini{width:clamp(36px,10vw,44px);height:clamp(52px,14vw,64px);border-radius:6px;background:var(--cream);border:1.5px solid rgba(0,0,0,.15);box-shadow:2px 3px 10px rgba(0,0,0,.6);position:relative;overflow:hidden;}
-.own-card-mini::before{content:'';position:absolute;inset:3px;border:1px solid rgba(0,0,0,.07);border-radius:4px;}
-.own-card-mini .r{position:absolute;top:3px;left:4px;font-size:clamp(8px,2.2vw,10px);font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;}
-.own-card-mini .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,5.5vw,26px);}
-.own-card-mini.red .r{color:var(--red);}
-.own-card-mini.red .c{color:var(--red);}
-.own-card-mini.black .r{color:#111;}
-.own-card-mini.black .c{color:#111;}
+.opp-stk{font-size:clamp(6px,1.3vh,7px);color:var(--gold);white-space:nowrap;}
+/* Own cards in V3 — bottom center, above table edge, NOT overlapping community */
+.own-cards-mini{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:7;}
+.own-card-mini{width:clamp(28px,7vh,40px);height:clamp(40px,10vh,58px);border-radius:5px;background:var(--cream);border:1.5px solid rgba(0,0,0,.15);box-shadow:2px 3px 8px rgba(0,0,0,.6);position:relative;overflow:hidden;}
+.own-card-mini::before{content:'';position:absolute;inset:2px;border:1px solid rgba(0,0,0,.07);border-radius:3px;}
+.own-card-mini .r{position:absolute;top:2px;left:3px;font-size:clamp(7px,1.8vh,9px);font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;}
+.own-card-mini .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(16px,4vh,22px);}
+.own-card-mini.red .r,.own-card-mini.red .c{color:var(--red);}
+.own-card-mini.black .r,.own-card-mini.black .c{color:#111;}
 .own-card-mini.hidden{background:linear-gradient(145deg,#1e3a7a,#0d1f4a);border-color:var(--gold-dark);}
 .own-card-mini.hidden .r,.own-card-mini.hidden .c{display:none;}
+.own-info-mini{position:absolute;bottom:12px;left:6px;z-index:7;display:flex;flex-direction:column;gap:1px;}
+.own-info-mini .nm{font-family:'Cinzel Decorative',cursive;font-size:8px;color:var(--gold-light);}
+.own-info-mini .stk{font-size:8px;color:var(--cream);}
 
-.own-info-mini{position:absolute;bottom:70px;left:10px;z-index:7;display:flex;flex-direction:column;gap:1px;}
-.own-info-mini .nm{font-family:'Cinzel Decorative',cursive;font-size:9px;color:var(--gold-light);}
-.own-info-mini .stk{font-size:9px;color:var(--cream);}
-
-/* ── LANDSCAPE: adapt card view for wide screen ──────────────────── */
-@media (orientation: landscape) {
-  .hand-card{width:clamp(90px,22vh,150px);height:clamp(130px,32vh,218px);}
-  .hc-tl,.hc-br{font-size:clamp(16px,4vh,26px);}
-  .hc-c{font-size:clamp(50px,13vh,80px);}
-  .peek-wrap{width:clamp(80px,20vh,140px);height:clamp(116px,29vh,203px);}
-  .own-cards-mini{bottom:80px;}
-  .own-info-mini{bottom:80px;}
-  .abtn{height:44px;}
+/* Fullscreen button overlay */
+#fs-phone-btn{
+  position:fixed;bottom:50%;right:4px;transform:translateY(50%);z-index:150;
+  background:rgba(0,0,0,.7);border:1px solid rgba(200,168,75,.4);border-radius:8px;
+  color:rgba(200,168,75,.8);font-size:18px;padding:8px 5px;cursor:pointer;
+  display:none;line-height:1;
 }
+#fs-phone-btn.show{display:block;}
 
-/* ── Rotate hint for browsers that ignore orientation lock ── */
+/* Rotate hint overlay */
 #rotate-hint{
   display:none;position:fixed;inset:0;z-index:300;
-  background:rgba(20,8,2,.97);flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  background:rgba(10,4,2,.95);flex-direction:column;align-items:center;justify-content:center;gap:16px;
 }
 #rotate-hint.show{display:flex;}
-#rotate-hint .ri{font-size:64px;animation:rotateHint 1.4s ease-in-out infinite;}
-@keyframes rotateHint{0%,100%{transform:rotate(0deg);}50%{transform:rotate(90deg);}}
-#rotate-hint p{font-family:'Cinzel',serif;font-size:13px;color:rgba(200,168,75,.7);letter-spacing:2px;text-align:center;line-height:1.6;}
-
-/* ── ACTION BAR (shared across views) ── */
-.action-bar{
-  flex:0 0 auto;
-  background:
-    repeating-linear-gradient(93deg,transparent,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 56px),
-    linear-gradient(180deg,#2a1008 0%,#3d1f0a 30%,#4a2510 70%,#3a1808 100%);
-  border-top:2px solid var(--gold-dark);
-  box-shadow:inset 0 1px 0 rgba(200,168,75,.1);
-  padding:8px 10px 14px;
-  position:relative;
-}
-.action-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dark) 20%,var(--gold-light) 50%,var(--gold-dark) 80%,transparent);opacity:.5;}
-
-.bet-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.bet-lbl{font-size:8px;color:rgba(200,168,75,.45);letter-spacing:1px;flex-shrink:0;}
-.bet-slider{
-  flex:1;-webkit-appearance:none;appearance:none;height:6px;
-  background:linear-gradient(90deg,var(--gold-dark),var(--gold));
-  border-radius:3px;outline:none;
-}
-.bet-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--gold-light);border:2px solid var(--wood);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.5);}
-.bet-val{min-width:56px;text-align:center;font-size:11px;color:var(--gold-light);background:rgba(0,0,0,.45);border:1px solid var(--gold-dark);border-radius:6px;padding:3px 5px;flex-shrink:0;}
-
-.action-btns{display:flex;gap:5px;}
-.abtn{
-  flex:1;height:var(--btn-h);border:none;border-radius:8px;cursor:pointer;
-  font-family:'Cinzel',serif;font-weight:700;font-size:clamp(9px,2.4vw,11px);letter-spacing:.5px;
-  position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;
-  transition:transform .1s,box-shadow .1s;
-}
-.abtn:active{transform:translateY(2px);}
-.abtn::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,transparent 50%);pointer-events:none;}
-.abtn .a-icon{font-size:14px;line-height:1;}
-.abtn .a-lbl{font-size:8px;letter-spacing:1px;}
-.abtn.fold{background:linear-gradient(180deg,#7a1a1a,#4a0f0f);color:#ffb3b3;border:1px solid #9a2a2a;box-shadow:0 3px 0 #2a0808,0 4px 10px rgba(0,0,0,.4);}
-.abtn.check{background:linear-gradient(180deg,#1a4a7a,#0f2a4a);color:#b3d4ff;border:1px solid #2a5a9a;box-shadow:0 3px 0 #081828,0 4px 10px rgba(0,0,0,.4);}
-.abtn.call{background:linear-gradient(180deg,#2a6a2a,#1a3a1a);color:#b3ffb3;border:1px solid #3a8a3a;box-shadow:0 3px 0 #081808,0 4px 10px rgba(0,0,0,.4);}
-.abtn.raise{background:linear-gradient(180deg,#8a6a10,#5a4008);color:#ffe090;border:1px solid var(--gold);box-shadow:0 3px 0 #2a1a04,0 4px 10px rgba(0,0,0,.4);}
-.abtn.allin{background:linear-gradient(180deg,#8a1a8a,#4a0a4a);color:#ffb3ff;border:1px solid #aa3aaa;box-shadow:0 3px 0 #280828,0 4px 10px rgba(0,0,0,.4);}
-.abtn:disabled{opacity:.35;pointer-events:none;}
-
-/* Compact action bar for view-table */
-.action-bar.compact .abtn .a-icon{display:none;}
-.action-bar.compact .abtn .a-lbl{font-size:9px;}
-.action-bar.compact{padding:6px 10px 12px;}
-.action-bar.compact .bet-row{margin-bottom:5px;}
+#rotate-hint .ri{font-size:64px;animation:rotHint 1.4s ease-in-out infinite;}
+@keyframes rotHint{0%,100%{transform:rotate(0deg);}50%{transform:rotate(90deg);}}
+#rotate-hint p{font-family:'Cinzel',serif;font-size:13px;color:rgba(200,168,75,.7);letter-spacing:2px;text-align:center;line-height:1.7;}
 
 /* ══════════════════════════════════
    WAITING SCREEN (not your turn)
@@ -576,42 +577,47 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 
 <!-- ══════════ GAME (active turn) ══════════ -->
 <div id="game-view" class="screen">
+  <!-- Topbar: minimal, no slider needed -->
   <div class="game-topbar">
     <div class="g-name" id="gv-name">♠ –</div>
-    <div class="turn-badge"><span class="dot"></span> Dein Zug!</div>
-    <div style="display:flex;align-items:center;gap:8px;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="pot-pill" id="v1-pot">◈ 0</div>
+      <div class="turn-badge"><span class="dot"></span> Dein Zug</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
       <div class="g-stack" id="gv-stack">◈ 0</div>
       <button class="vsw-btn" id="vsw-btn" onclick="cycleView()">👁<div class="vsw-badge" id="vsw-badge">2</div></button>
     </div>
   </div>
 
   <div class="view-area">
-    <!-- View 1: Cards -->
+
+    <!-- VIEW 1: Big cards left, buttons right -->
     <div class="view active" id="view-cards">
-      <div class="cards-area" id="v1-cards"></div>
-      <div class="info-strip">
-        <span>SB: ◈<span id="v1-sb">25</span></span>
-        <span style="color:rgba(200,168,75,.2)">│</span>
-        <div class="pot-pill" id="v1-pot">POT: ◈ 0</div>
-        <span style="color:rgba(200,168,75,.2)">│</span>
-        <span>BB: ◈<span id="v1-bb">50</span></span>
-      </div>
-      <div class="action-bar">
-        <div class="bet-row">
-          <div class="bet-lbl">EINSATZ</div>
-          <input type="range" class="bet-slider" id="v1-slider" min="0" max="1000" value="0" oninput="updateBetVal(this.value)">
-          <div class="bet-val" id="v1-betval">◈ 0</div>
+      <div class="vl">
+        <div class="cards-area" id="v1-cards"></div>
+        <div class="info-strip">
+          <span>SB ◈<span id="v1-sb">25</span></span>
+          <span style="color:rgba(200,168,75,.2)">│</span>
+          <span>BB ◈<span id="v1-bb">50</span></span>
         </div>
-        <div class="action-btns" id="v1-btns"></div>
+      </div>
+      <div class="vr" id="v1-panel">
+        <div class="vbtns" id="v1-btns"></div>
+        <div class="knob-wrap" id="v1-knob-wrap">
+          <div class="knob-lbl">RAISE</div>
+          <canvas class="knob" id="knob1" width="64" height="64"></canvas>
+          <div class="knob-val" id="v1-betval">◈ 0</div>
+        </div>
       </div>
     </div>
 
-    <!-- View 2: Peek -->
+    <!-- VIEW 2: Peek cards left, buttons right -->
     <div class="view" id="view-peek">
-      <div class="peek-top" id="peek-top">
-        <div class="info-strip" style="position:absolute;top:10px;">
-          <div class="pot-pill" id="v2-pot">POT: ◈ 0</div>
-          <span style="font-size:10px;color:rgba(200,168,75,.4);" id="v2-call">CALL: ◈ 0</span>
+      <div class="vl" id="peek-top">
+        <div class="peek-info">
+          <div class="pot-pill" id="v2-pot">POT ◈ 0</div>
+          <span style="font-size:9px;color:rgba(200,168,75,.4);" id="v2-call">CALL ◈ 0</span>
         </div>
         <div class="peek-hint" id="peek-hint">
           <div class="hint-arrows">
@@ -632,14 +638,19 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
           </div>
         </div>
       </div>
-      <div class="action-bar">
-        <div class="action-btns" id="v2-btns"></div>
+      <div class="vr" id="v2-panel">
+        <div class="vbtns" id="v2-btns"></div>
+        <div class="knob-wrap" id="v2-knob-wrap">
+          <div class="knob-lbl">RAISE</div>
+          <canvas class="knob" id="knob2" width="64" height="64"></canvas>
+          <div class="knob-val" id="v2-betval">◈ 0</div>
+        </div>
       </div>
     </div>
 
-    <!-- View 3: Table -->
+    <!-- VIEW 3: Table left, buttons right -->
     <div class="view" id="view-table">
-      <div class="table-mini" id="v3-table">
+      <div class="vl table-mini" id="v3-table">
         <div class="mini-oval"></div>
         <div class="comm-mini" id="v3-comm"></div>
         <div class="pot-mini"><div class="pot-pill" id="v3-pot">◈ 0</div></div>
@@ -647,16 +658,17 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
         <div class="own-cards-mini" id="v3-own-cards"></div>
         <div class="own-info-mini" id="v3-own-info"></div>
       </div>
-      <div class="action-bar compact">
-        <div class="bet-row">
-          <div class="bet-lbl">EINSATZ</div>
-          <input type="range" class="bet-slider" id="v3-slider" min="0" max="1000" value="0" oninput="updateBetVal3(this.value)">
-          <div class="bet-val" id="v3-betval">◈ 0</div>
+      <div class="vr" id="v3-panel">
+        <div class="vbtns" id="v3-btns"></div>
+        <div class="knob-wrap" id="v3-knob-wrap">
+          <div class="knob-lbl">RAISE</div>
+          <canvas class="knob" id="knob3" width="64" height="64"></canvas>
+          <div class="knob-val" id="v3-betval">◈ 0</div>
         </div>
-        <div class="action-btns" id="v3-btns"></div>
       </div>
     </div>
-  </div>
+
+  </div><!-- view-area -->
 </div>
 
 <!-- Win overlay -->
@@ -673,9 +685,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 
 <!-- Rotate hint (portrait during game) -->
 <div id="rotate-hint">
-  <div class="ri">&#x1F4F1;</div>
+  <div class="ri">📱</div>
   <p>Bitte Handy<br>drehen</p>
 </div>
+
+<!-- Manual fullscreen button (fallback if auto-FS denied) -->
+<button id="fs-phone-btn" onclick="requestFullscreenAndLandscape();this.classList.remove('show');">⛶</button>
 
 <script>
 let socket = null;
@@ -985,7 +1000,7 @@ function renderV3(state, me) {
     commEl.appendChild(d);
   }
 
-  // Own cards
+  // Own cards — fixed bottom-left so they NEVER overlap community
   const ownCards = document.getElementById('v3-own-cards');
   ownCards.innerHTML = '';
   const show = myCards && myCards.length === 2 && !myCards.includes('??');
@@ -994,24 +1009,22 @@ function renderV3(state, me) {
     if (show) {
       const c = myCards[i];
       d.className = 'own-card-mini ' + (isRed(c) ? 'red' : 'black');
-      d.style.transform = i === 0 ? 'rotate(-6deg)' : 'rotate(6deg)';
+      d.style.transform = i === 0 ? 'rotate(-5deg)' : 'rotate(5deg)';
       const r = rankDisplay(c), s = suitSymbol(c);
       d.innerHTML = `<div class="r">${r}<br>${s}</div><div class="c">${s}</div>`;
     } else {
       d.className = 'own-card-mini hidden';
-      d.style.transform = i === 0 ? 'rotate(-6deg)' : 'rotate(6deg)';
+      d.style.transform = i === 0 ? 'rotate(-5deg)' : 'rotate(5deg)';
     }
     ownCards.appendChild(d);
   }
   document.getElementById('v3-own-info').innerHTML =
     `<div class="nm">${me.name}</div><div class="stk">◈ ${me.stack}</div>`;
 
-  // Opponents: use view-area dimensions (always in DOM, always sized correctly)
-  // v3-table is position:relative inside view-area which is flex:1
-  const viewArea = document.getElementById('game-view');
-  // Measure via view-area; subtract topbar (~52px) and action-bar (~110px)
-  const W = viewArea ? viewArea.clientWidth  || window.innerWidth  : window.innerWidth;
-  const H = viewArea ? (viewArea.clientHeight || window.innerHeight) - 162 : window.innerHeight - 162;
+  // Opponents — measure the vl (left panel) which is always in DOM
+  const vl = document.getElementById('v3-table');
+  const W = vl.clientWidth  || (window.innerWidth  - 120);
+  const H = vl.clientHeight || (window.innerHeight - 44);
 
   const oppContainer = document.getElementById('v3-opponents');
   oppContainer.innerHTML = '';
@@ -1019,10 +1032,11 @@ function renderV3(state, me) {
   const n = opps.length;
   if (n === 0) return;
 
-  const cx = W / 2;
+  // Center of oval — keep in upper 70% so own cards at bottom don't overlap
+  const cx = W * 0.5;
   const cy = H * 0.42;
-  const rx = W * 0.33;
-  const ry = H * 0.33;
+  const rx = W * 0.38;
+  const ry = H * 0.30;
 
   opps.forEach((p, i) => {
     const angle = (2 * Math.PI * i / n) - Math.PI / 2;
@@ -1043,58 +1057,43 @@ function renderV3(state, me) {
 // ── Action bars ───────────────────────────────────────────────────────
 function updateActionBars() {
   const btnDefs = [
-    { cls:'fold', icon:'✕', lbl:'Fold', action:'fold' },
-    { cls:'check', icon:'○', lbl:'Check', action:'check', altLbl:'Check' },
-    { cls:'call', icon:'↑', lbl:'Call', action:'call' },
-    { cls:'raise', icon:'⬆', lbl:'Raise', action:'raise' },
+    { cls:'fold',  icon:'✕', lbl:'Fold',   action:'fold'  },
+    { cls:'check', icon:'○', lbl:'Check',  action:'check' },
+    { cls:'call',  icon:'↑', lbl:'Call',   action:'call'  },
+    { cls:'raise', icon:'⬆', lbl:'Raise',  action:'raise' },
     { cls:'allin', icon:'★', lbl:'All-In', action:'allIn' },
   ];
 
-  // Update sliders
-  const me = gameState?.players.find(p=>p.id===myId);
+  const me = gameState?.players.find(p => p.id === myId);
   const maxBet = me?.stack || 0;
   const minBet = Math.max(callAmount, minRaise || settings.bigBlind);
   currentBet = minBet;
-  ['v1-slider','v3-slider'].forEach(id => {
-    const sl = document.getElementById(id);
-    sl.min = 0; sl.max = maxBet; sl.value = minBet;
-  });
-  updateBetVal(minBet);
-  updateBetVal3(minBet);
+
+  // Init knobs with new range
+  initKnobs(minBet, maxBet);
 
   ['v1-btns','v2-btns','v3-btns'].forEach(id => {
     const el = document.getElementById(id);
+    if (!el) return;
     el.innerHTML = '';
     btnDefs.forEach(def => {
       const btn = document.createElement('button');
       const isCheck = callAmount === 0 && def.action === 'call';
-      const action = isCheck ? 'check' : def.action;
-      const lbl = isCheck ? 'Check' : (def.action === 'call' ? `Call ◈${callAmount}` : def.lbl);
+      const action  = isCheck ? 'check' : def.action;
+      const lbl     = isCheck ? 'Check' : (def.action === 'call' ? `◈${callAmount}` : def.lbl);
       const enabled = validActions.includes(action) || (isCheck && validActions.includes('check'));
       btn.className = `abtn ${def.cls}`;
-      btn.disabled = !enabled;
+      btn.disabled  = !enabled;
       btn.innerHTML = `<span class="a-icon">${def.icon}</span><span class="a-lbl">${lbl}</span>`;
       btn.addEventListener('click', () => doAction(action));
       el.appendChild(btn);
     });
+    // Disable mutually exclusive check/call
+    const checkBtn = el.querySelector('.abtn.check');
+    const callBtn  = el.querySelector('.abtn.call');
+    if (callAmount > 0) { if (checkBtn) checkBtn.disabled = true; }
+    else                { if (callBtn)  callBtn.disabled  = true; }
   });
-
-  // hide check if call exists and vice versa
-  document.querySelectorAll('.action-btns').forEach(bar => {
-    const checkBtn = bar.querySelector('.abtn.check');
-    const callBtn  = bar.querySelector('.abtn.call');
-    if (callAmount > 0) { if(checkBtn) checkBtn.disabled = true; }
-    else                { if(callBtn)  callBtn.disabled  = true; }
-  });
-}
-
-function updateBetVal(v) {
-  currentBet = parseInt(v);
-  document.getElementById('v1-betval').textContent = '◈ ' + currentBet;
-}
-function updateBetVal3(v) {
-  currentBet = parseInt(v);
-  document.getElementById('v3-betval').textContent = '◈ ' + currentBet;
 }
 
 function doAction(action) {
@@ -1104,35 +1103,184 @@ function doAction(action) {
   showScreen('wait-turn');
 }
 
+// ── Rotary Knob ───────────────────────────────────────────────────────
+// One shared knob state; all three canvases show same value
+let knobMin = 0, knobMax = 1000;
+let knobAngle = 0;          // degrees, -135 to +135
+let knobDragging = false;
+let knobLastY = 0;
+let knobVelocity = 0;       // for momentum / acceleration
+let knobInerTimer = null;
+
+const KNOB_MIN_DEG = -135;
+const KNOB_MAX_DEG =  135;
+const KNOB_IDS = ['knob1','knob2','knob3'];
+const BET_IDS  = ['v1-betval','v2-betval','v3-betval'];
+
+function knobAngleToBet(angle) {
+  const pct = (angle - KNOB_MIN_DEG) / (KNOB_MAX_DEG - KNOB_MIN_DEG);
+  return Math.round(knobMin + pct * (knobMax - knobMin));
+}
+
+function drawKnob(canvasId, angleDeg) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height, cx = W/2, cy = H/2, r = W/2 - 3;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Outer ring gradient
+  const grad = ctx.createRadialGradient(cx-r*.3, cy-r*.3, 0, cx, cy, r);
+  grad.addColorStop(0, '#6b3a1f');
+  grad.addColorStop(1, '#1a0a04');
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Gold border
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = '#9a7830'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Arc track (background)
+  const startA = (KNOB_MIN_DEG - 90) * Math.PI / 180;
+  const endA   = (KNOB_MAX_DEG - 90) * Math.PI / 180;
+  ctx.beginPath(); ctx.arc(cx, cy, r - 6, startA, endA);
+  ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.stroke();
+
+  // Arc track (filled = current value)
+  const curA = (angleDeg - 90) * Math.PI / 180;
+  ctx.beginPath(); ctx.arc(cx, cy, r - 6, startA, curA);
+  ctx.strokeStyle = '#c8a84b'; ctx.lineWidth = 4; ctx.stroke();
+
+  // Notch / pointer
+  const rad = angleDeg * Math.PI / 180;
+  const nx = cx + (r - 10) * Math.sin(rad);
+  const ny = cy - (r - 10) * Math.cos(rad);
+  ctx.beginPath(); ctx.arc(nx, ny, 4, 0, Math.PI*2);
+  const ng = ctx.createRadialGradient(nx, ny, 0, nx, ny, 5);
+  ng.addColorStop(0, '#f0d878'); ng.addColorStop(1, '#9a7830');
+  ctx.fillStyle = ng; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+
+  // Inner highlight
+  ctx.beginPath(); ctx.arc(cx - r*.25, cy - r*.25, r*.2, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fill();
+}
+
+function updateKnobDisplay() {
+  const bet = knobAngleToBet(knobAngle);
+  currentBet = Math.max(knobMin, Math.min(knobMax, bet));
+  const label = '◈ ' + currentBet;
+  BET_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+  KNOB_IDS.forEach(id => drawKnob(id, knobAngle));
+}
+
+function initKnobs(min, max) {
+  knobMin = min; knobMax = max;
+  // Start at min value
+  knobAngle = KNOB_MIN_DEG;
+  currentBet = min;
+  updateKnobDisplay();
+  // Attach listeners once
+  if (!window._knobListenersAttached) {
+    window._knobListenersAttached = true;
+    KNOB_IDS.forEach(id => {
+      const c = document.getElementById(id);
+      if (!c) return;
+      c.addEventListener('touchstart', knobTouchStart, { passive: false });
+      c.addEventListener('mousedown',  knobMouseStart);
+    });
+    document.addEventListener('touchmove', knobTouchMove, { passive: false });
+    document.addEventListener('touchend',  knobEnd);
+    document.addEventListener('mousemove', knobMouseMove);
+    document.addEventListener('mouseup',   knobEnd);
+  }
+}
+
+function knobTouchStart(e) {
+  if (e.touches.length !== 1) return;
+  knobDragging = true; knobVelocity = 0;
+  knobLastY = e.touches[0].clientY;
+  e.preventDefault();
+}
+function knobMouseStart(e) {
+  knobDragging = true; knobVelocity = 0;
+  knobLastY = e.clientY;
+  e.preventDefault();
+}
+function knobTouchMove(e) {
+  if (!knobDragging) return;
+  const dy = knobLastY - e.touches[0].clientY;
+  knobLastY = e.touches[0].clientY;
+  applyKnobDelta(dy);
+  e.preventDefault();
+}
+function knobMouseMove(e) {
+  if (!knobDragging) return;
+  const dy = knobLastY - e.clientY;
+  knobLastY = e.clientY;
+  applyKnobDelta(dy);
+}
+function knobEnd() {
+  if (!knobDragging) return;
+  knobDragging = false;
+  // Momentum: continue spinning with decreasing velocity
+  if (Math.abs(knobVelocity) > 0.3) {
+    const spin = () => {
+      knobVelocity *= 0.92;
+      applyKnobDelta(knobVelocity);
+      if (Math.abs(knobVelocity) > 0.2) knobInerTimer = requestAnimationFrame(spin);
+    };
+    knobInerTimer = requestAnimationFrame(spin);
+  }
+}
+
+function applyKnobDelta(dy) {
+  // Acceleration: faster drag → bigger steps
+  const speed = Math.abs(dy);
+  const step = speed < 2 ? 1 : speed < 5 ? 3 : speed < 10 ? 8 : 20;
+  const delta = dy > 0 ? step : -step;
+  // Map to angle range: full drag from bottom to top = full arc
+  const anglePerPx = (KNOB_MAX_DEG - KNOB_MIN_DEG) / 200;
+  const angleDelta = dy * anglePerPx * (speed < 3 ? 1 : speed < 8 ? 2 : 4);
+  knobAngle = Math.max(KNOB_MIN_DEG, Math.min(KNOB_MAX_DEG, knobAngle + angleDelta));
+  knobVelocity = dy;
+  updateKnobDisplay();
+}
+
 // ── View cycling ──────────────────────────────────────────────────────
 function cycleView() {
   setView(currentView % 3 + 1);
-  const btn = document.getElementById('vsw-btn');
-  btn.style.transform = 'rotate(180deg)';
-  setTimeout(() => btn.style.transform = '', 300);
 }
 function setView(n) {
   currentView = n;
-  ['view-cards','view-peek','view-table'].forEach((id,i) => {
-    document.getElementById(id)?.classList.toggle('active', i+1 === n);
+  ['view-cards','view-peek','view-table'].forEach((id, i) => {
+    document.getElementById(id)?.classList.toggle('active', i + 1 === n);
   });
-  document.getElementById('vsw-badge').textContent = (n % 3) + 1;
-  // Re-render opponents when switching to view 3 so positions are correct
+  const labels = ['1','2','3'];
+  document.getElementById('vsw-badge').textContent = labels[n % 3];
   if (n === 3 && gameState) {
     const me = gameState.players.find(p => p.id === myId);
     if (me) renderV3(gameState, me);
   }
+  // Redraw knobs when view becomes visible
+  KNOB_IDS.forEach(id => drawKnob(id, knobAngle));
 }
 
 // ── Swipe peek ────────────────────────────────────────────────────────
 let peekY = 0, peekActive = false, peekStart = 0;
-const MAX_LIFT = 160;
+const MAX_LIFT = 130;
 
-function getPeekArea() { return document.getElementById('peek-top'); }
-function getPeekEl(i)  { return { back: document.getElementById('pb'+i), shadow: document.getElementById('ps'+i) }; }
+function getPeekEl(i) { return { back: document.getElementById('pb'+i), shadow: document.getElementById('ps'+i) }; }
 
 function peekStart_(e) {
   if (!document.getElementById('view-peek').classList.contains('active')) return;
+  // Don't activate if touch is on the right panel (buttons/knob)
+  const target = e.target || e.srcElement;
+  if (target.closest && target.closest('.vr')) return;
   peekActive = true;
   peekStart = (e.touches ? e.touches[0].clientY : e.clientY);
   document.getElementById('peek-hint').style.opacity = '0';
@@ -1144,52 +1292,48 @@ function peekMove_(e) {
   const delta = Math.max(0, peekStart - y);
   peekY = Math.min(delta, MAX_LIFT);
   const pct = peekY / MAX_LIFT;
-  for (let i=0;i<2;i++) {
+  for (let i = 0; i < 2; i++) {
     const { back, shadow } = getPeekEl(i);
     if (back) back.style.transform = `translateY(${pct * 105}%)`;
-    if (shadow) { shadow.style.transform=`scaleX(${1-pct*.5})`; shadow.style.opacity=String(1-pct*.8); }
+    if (shadow) { shadow.style.transform = `scaleX(${1-pct*.5})`; shadow.style.opacity = String(1-pct*.8); }
   }
-  const wrapEls = [document.getElementById('pw0'), document.getElementById('pw1')];
-  wrapEls.forEach(w => { if(w) w.style.transform = `translateY(-${peekY * 0.7}px)`; });
+  const wraps = [document.getElementById('pw0'), document.getElementById('pw1')];
+  wraps.forEach(w => { if (w) w.style.transform = `translateY(-${peekY * 0.6}px)`; });
   e.preventDefault();
 }
 function peekEnd_(e) {
   if (!peekActive) return;
   peekActive = false;
-  // Snap back
-  const dur = '0.5s cubic-bezier(0.25,1.4,0.5,1)';
-  for (let i=0;i<2;i++) {
+  const dur = '0.45s cubic-bezier(0.25,1.4,0.5,1)';
+  for (let i = 0; i < 2; i++) {
     const { back, shadow } = getPeekEl(i);
-    if (back) { back.style.transition=dur; back.style.transform='translateY(0)'; setTimeout(()=>back.style.transition='',600); }
-    if (shadow) { shadow.style.transition=dur; shadow.style.transform='scaleX(1)'; shadow.style.opacity='1'; setTimeout(()=>shadow.style.transition='',600); }
+    if (back)   { back.style.transition   = dur; back.style.transform   = 'translateY(0)'; setTimeout(() => back.style.transition   = '', 500); }
+    if (shadow) { shadow.style.transition = dur; shadow.style.transform = 'scaleX(1)'; shadow.style.opacity = '1'; setTimeout(() => shadow.style.transition = '', 500); }
   }
   [document.getElementById('pw0'), document.getElementById('pw1')].forEach(w => {
-    if(w) { w.style.transition=dur; w.style.transform='translateY(0)'; setTimeout(()=>w.style.transition='',600); }
+    if (w) { w.style.transition = dur; w.style.transform = 'translateY(0)'; setTimeout(() => w.style.transition = '', 500); }
   });
   peekY = 0;
-  setTimeout(()=>document.getElementById('peek-hint').style.opacity='1', 800);
+  setTimeout(() => { const h = document.getElementById('peek-hint'); if (h) h.style.opacity = '1'; }, 700);
 }
 
-// Peek listeners only on peek-top area — NOT on document
-// This prevents blocking action buttons and the view-switch button
 const peekTopEl = document.getElementById('peek-top');
 if (peekTopEl) {
   peekTopEl.addEventListener('touchstart', peekStart_, { passive: false });
   peekTopEl.addEventListener('mousedown',  peekStart_);
 }
-// Move and end on document so peek works even if finger slides outside peek-top
-document.addEventListener('touchmove', (e) => { if (peekActive) peekMove_(e); }, { passive: false });
-document.addEventListener('touchend',  (e) => { if (peekActive) peekEnd_(e);  });
-document.addEventListener('mousemove', (e) => { if (peekActive) peekMove_(e); });
-document.addEventListener('mouseup',   (e) => { if (peekActive) peekEnd_(e);  });
+document.addEventListener('touchmove', e => { if (peekActive) peekMove_(e); }, { passive: false });
+document.addEventListener('touchend',  e => { if (peekActive) peekEnd_(e);  });
+document.addEventListener('mousemove', e => { if (peekActive) peekMove_(e); });
+document.addEventListener('mouseup',   e => { if (peekActive) peekEnd_(e);  });
 
 // ── Winner ────────────────────────────────────────────────────────────
 function showWinner(w) {
   if (!w) return;
-  document.getElementById('wo-av').textContent = w.avatar || '🎩';
+  document.getElementById('wo-av').textContent   = w.avatar || '🎩';
   document.getElementById('wo-name').textContent = w.name;
   document.getElementById('wo-hand').textContent = w.handName || '–';
-  document.getElementById('wo-amt').textContent = '+ ◈ ' + w.amount;
+  document.getElementById('wo-amt').textContent  = '+ ◈ ' + w.amount;
   document.getElementById('wo-banner').textContent = '♛ ' + (w.handName || 'Gewinner') + ' ♛';
   document.getElementById('win-overlay').classList.add('show');
   let cd = 5;
@@ -1206,9 +1350,7 @@ const GAME_SCREENS = new Set(['game-view','wait-turn']);
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id)?.classList.add('active');
-  // Show rotate hint when in game and in portrait
-  const inGame = GAME_SCREENS.has(id);
-  checkOrientation(inGame);
+  checkOrientation(GAME_SCREENS.has(id));
 }
 
 function checkOrientation(inGame) {
@@ -1216,51 +1358,65 @@ function checkOrientation(inGame) {
   if (!hint) return;
   const isPortrait = window.innerHeight > window.innerWidth;
   hint.classList.toggle('show', inGame && isPortrait);
+  // If in game and portrait, also try fullscreen+landscape again
+  if (inGame && isPortrait) requestFullscreenAndLandscape();
 }
 
 window.addEventListener('resize', () => {
   const activeGame = [...GAME_SCREENS].some(id => document.getElementById(id)?.classList.contains('active'));
   checkOrientation(activeGame);
+  // Re-render V3 opponents on resize
+  if (currentView === 3 && gameState) {
+    const me = gameState.players.find(p => p.id === myId);
+    if (me) renderV3(gameState, me);
+  }
 });
+
 function showToast(msg) {
-  const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
-  document.body.appendChild(t); setTimeout(()=>t.remove(),3500);
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
 }
 function phaseLabel(p) {
-  return {lobby:'LOBBY',setup:'SETUP',dealing:'AUSTEILEN',preflop:'PRE-FLOP',flop:'FLOP',turn:'TURN',river:'RIVER',showdown:'SHOWDOWN',winner:'GEWINNER',gameover:'SPIEL VORBEI'}[p]||p.toUpperCase();
+  return {lobby:'LOBBY',setup:'SETUP',dealing:'AUSTEILEN',preflop:'PRE-FLOP',flop:'FLOP',turn:'TURN',river:'RIVER',showdown:'SHOWDOWN',winner:'GEWINNER',gameover:'SPIEL VORBEI'}[p] || p.toUpperCase();
 }
-function rankDisplay(code) { return {'T':'10','J':'J','Q':'Q','K':'K','A':'A'}[code[0]]||code[0]; }
-function suitSymbol(code)  { return {'s':'♠','h':'♥','d':'♦','c':'♣'}[code[1]]||code[1]; }
-function isRed(code)       { return code[1]==='h'||code[1]==='d'; }
+function rankDisplay(code) { return {'T':'10','J':'J','Q':'Q','K':'K','A':'A'}[code[0]] || code[0]; }
+function suitSymbol(code)  { return {'s':'♠','h':'♥','d':'♦','c':'♣'}[code[1]] || code[1]; }
+function isRed(code)       { return code[1] === 'h' || code[1] === 'd'; }
 
 // ── FULLSCREEN + LANDSCAPE ────────────────────────────────────────────
 function requestFullscreenAndLandscape() {
   const el = document.documentElement;
   const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
-  if (fn) fn.call(el).catch(()=>{});
+  if (fn) fn.call(el).catch(() => {});
   if (screen.orientation && screen.orientation.lock) {
-    screen.orientation.lock('landscape').catch(()=>{});
+    screen.orientation.lock('landscape').catch(() => {});
   }
 }
-// Browsers need a user gesture. We register on capture phase so we fire
-// BEFORE peekStart_ (which uses default bubbling/capture).
+
+// Try on first interaction (capture phase fires before any other handler)
 let phoneFs = false;
-function tryPhoneFs(e) {
+function tryPhoneFs() {
   if (phoneFs) return;
   phoneFs = true;
   requestFullscreenAndLandscape();
 }
-// Use capture:true so this fires before any other listener
 document.addEventListener('touchstart', tryPhoneFs, { once: true, capture: true });
 document.addEventListener('click',      tryPhoneFs, { once: true, capture: true });
 document.addEventListener('touchend',   tryPhoneFs, { once: true, capture: true });
 
-// ── NEW GAME handler is registered inside connectSocket ───────────────
-// (see connectSocket function where socket.on('new-game-started') is added)
+// Also show a manual fullscreen tap-zone if FS wasn't granted after 3s
+setTimeout(() => {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    const btn = document.getElementById('fs-phone-btn');
+    if (btn) btn.classList.add('show');
+  }
+}, 3000);
+
+// ── NEW GAME handler registered in connectSocket ──────────────────────
 
 // Service Worker
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 </script>
 </body>
