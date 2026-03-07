@@ -193,20 +193,20 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 
 /* VIEW 1 – Cards visible */
 .cards-area{
-  flex:1;display:flex;align-items:center;justify-content:center;gap:16px;
+  flex:1;display:flex;align-items:center;justify-content:center;gap:20px;
   padding:10px;
 }
 .hand-card{
-  width:clamp(160px,44vw,220px);height:clamp(236px,64vw,324px);
-  border-radius:10px;background:var(--cream);
+  width:clamp(130px,36vw,180px);height:clamp(190px,52vw,262px);
+  border-radius:12px;background:var(--cream);
   border:1.5px solid rgba(0,0,0,.15);
   box-shadow:3px 5px 18px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.8);
   position:relative;overflow:hidden;
 }
-.hand-card::before{content:'';position:absolute;inset:4px;border:1px solid rgba(0,0,0,.07);border-radius:7px;}
-.hc-tl{position:absolute;top:6px;left:7px;font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;font-size:clamp(28px,8vw,40px);}
-.hc-c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(80px,22vw,112px);}
-.hc-br{position:absolute;bottom:6px;right:7px;font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;font-size:clamp(28px,8vw,40px);transform:rotate(180deg);}
+.hand-card::before{content:'';position:absolute;inset:5px;border:1px solid rgba(0,0,0,.07);border-radius:9px;}
+.hc-tl{position:absolute;top:8px;left:9px;font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;font-size:clamp(22px,6vw,32px);}
+.hc-c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(70px,18vw,100px);}
+.hc-br{position:absolute;bottom:8px;right:9px;font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;font-size:clamp(22px,6vw,32px);transform:rotate(180deg);}
 .hand-card.red .hc-tl,.hand-card.red .hc-br{color:var(--red);}
 .hand-card.red .hc-c{color:var(--red);}
 .hand-card.black .hc-tl,.hand-card.black .hc-br{color:#111;}
@@ -235,8 +235,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 .ha:nth-child(3){animation-delay:.36s;opacity:.28;}
 @keyframes ap{0%,100%{opacity:.18;}60%{opacity:1;}}
 
-.peek-pair{display:flex;gap:18px;position:relative;}
-.peek-wrap{width:clamp(150px,42vw,200px);height:clamp(220px,62vw,296px);position:relative;}
+.peek-pair{display:flex;gap:24px;position:relative;}
+.peek-wrap{width:clamp(120px,34vw,160px);height:clamp(175px,50vw,232px);position:relative;}
 /* Back card (slides down when swiping) */
 .pk-back{
   position:absolute;inset:0;border-radius:9px;
@@ -255,9 +255,9 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
   overflow:hidden;z-index:1;
 }
 .pk-front::before{content:'';position:absolute;inset:4px;border:1px solid rgba(0,0,0,.07);border-radius:6px;}
-.pk-front .hc-tl{top:5px;left:6px;font-size:clamp(24px,7vw,36px);}
-.pk-front .hc-c{font-size:clamp(72px,20vw,100px);}
-.pk-front .hc-br{bottom:5px;right:6px;font-size:clamp(24px,7vw,36px);}
+.pk-front .hc-tl{top:5px;left:6px;font-size:clamp(12px,3.5vw,18px);}
+.pk-front .hc-c{font-size:clamp(36px,10vw,50px);}
+.pk-front .hc-br{bottom:5px;right:6px;font-size:clamp(12px,3.5vw,18px);}
 .peek-shadow{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:70%;height:8px;border-radius:50%;background:rgba(0,0,0,.4);filter:blur(4px);transition:all .1s;}
 
 /* VIEW 3 – Table overview */
@@ -274,9 +274,9 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
   position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
   display:flex;gap:3px;z-index:5;
 }
-.mini-card{width:clamp(32px,9vw,44px);height:clamp(46px,13vw,64px);border-radius:3px;background:var(--cream);border:1px solid rgba(0,0,0,.15);box-shadow:1px 2px 5px rgba(0,0,0,.5);position:relative;}
+.mini-card{width:clamp(16px,4.5vw,22px);height:clamp(23px,6.5vw,32px);border-radius:3px;background:var(--cream);border:1px solid rgba(0,0,0,.15);box-shadow:1px 2px 5px rgba(0,0,0,.5);position:relative;}
 .mini-card.back{background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1.5px solid var(--gold-dark);opacity:.6;}
-.mini-card .r{position:absolute;top:1px;left:2px;font-size:clamp(10px,2.8vw,14px);font-family:'IM Fell English',serif;font-weight:700;line-height:1;}
+.mini-card .r{position:absolute;top:1px;left:2px;font-size:clamp(5px,1.4vw,7px);font-family:'IM Fell English',serif;font-weight:700;line-height:1;}
 
 .pot-mini{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);z-index:5;}
 .opp-seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:6;transform:translate(-50%,-50%);}
@@ -288,10 +288,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 .opp-stk{font-size:clamp(6px,1.6vw,7px);color:var(--gold);white-space:nowrap;}
 
 .own-cards-mini{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:7;}
-.own-card-mini{width:clamp(72px,20vw,88px);height:clamp(104px,28vw,128px);border-radius:6px;background:var(--cream);border:1.5px solid rgba(0,0,0,.15);box-shadow:2px 3px 10px rgba(0,0,0,.6);position:relative;overflow:hidden;}
+.own-card-mini{width:clamp(36px,10vw,44px);height:clamp(52px,14vw,64px);border-radius:6px;background:var(--cream);border:1.5px solid rgba(0,0,0,.15);box-shadow:2px 3px 10px rgba(0,0,0,.6);position:relative;overflow:hidden;}
 .own-card-mini::before{content:'';position:absolute;inset:3px;border:1px solid rgba(0,0,0,.07);border-radius:4px;}
-.own-card-mini .r{position:absolute;top:3px;left:4px;font-size:clamp(16px,4.4vw,20px);font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;}
-.own-card-mini .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(40px,11vw,52px);}
+.own-card-mini .r{position:absolute;top:3px;left:4px;font-size:clamp(8px,2.2vw,10px);font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;}
+.own-card-mini .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,5.5vw,26px);}
 .own-card-mini.red .r{color:var(--red);}
 .own-card-mini.red .c{color:var(--red);}
 .own-card-mini.black .r{color:#111;}
@@ -302,6 +302,27 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 .own-info-mini{position:absolute;bottom:70px;left:10px;z-index:7;display:flex;flex-direction:column;gap:1px;}
 .own-info-mini .nm{font-family:'Cinzel Decorative',cursive;font-size:9px;color:var(--gold-light);}
 .own-info-mini .stk{font-size:9px;color:var(--cream);}
+
+/* ── LANDSCAPE: adapt card view for wide screen ──────────────────── */
+@media (orientation: landscape) {
+  .hand-card{width:clamp(90px,22vh,150px);height:clamp(130px,32vh,218px);}
+  .hc-tl,.hc-br{font-size:clamp(16px,4vh,26px);}
+  .hc-c{font-size:clamp(50px,13vh,80px);}
+  .peek-wrap{width:clamp(80px,20vh,140px);height:clamp(116px,29vh,203px);}
+  .own-cards-mini{bottom:80px;}
+  .own-info-mini{bottom:80px;}
+  .abtn{height:44px;}
+}
+
+/* ── Rotate hint for browsers that ignore orientation lock ── */
+#rotate-hint{
+  display:none;position:fixed;inset:0;z-index:300;
+  background:rgba(20,8,2,.97);flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+#rotate-hint.show{display:flex;}
+#rotate-hint .ri{font-size:64px;animation:rotateHint 1.4s ease-in-out infinite;}
+@keyframes rotateHint{0%,100%{transform:rotate(0deg);}50%{transform:rotate(90deg);}}
+#rotate-hint p{font-family:'Cinzel',serif;font-size:13px;color:rgba(200,168,75,.7);letter-spacing:2px;text-align:center;line-height:1.6;}
 
 /* ── ACTION BAR (shared across views) ── */
 .action-bar{
@@ -650,8 +671,13 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
   <div class="wo-cd" id="wo-cd">Nächste Hand in 5...</div>
 </div>
 
+<!-- Rotate hint (portrait during game) -->
+<div id="rotate-hint">
+  <div class="ri">&#x1F4F1;</div>
+  <p>Bitte Handy<br>drehen</p>
+</div>
+
 <script>
-// ── State ─────────────────────────────────────────────────────────────
 let socket = null;
 let myId = null, myAvatar = '🎩', myName = '', isMaster = false;
 let currentView = 1;
@@ -750,6 +776,11 @@ function connectSocket(code, name, avatar) {
   socket.on('blind-raise', ({ small, big }) => {
     settings.smallBlind = small; settings.bigBlind = big;
     showToast(`↑ Blinds: ◈${small} / ◈${big}`);
+  });
+
+  socket.on('new-game-started', () => {
+    myCards = []; gameState = null; isMaster = false; myId = null;
+    showScreen('join');
   });
 }
 
@@ -946,13 +977,14 @@ function renderV3(state, me) {
     const d = document.createElement('div');
     if (state.communityCards[i]) {
       const c = state.communityCards[i];
-      d.className = 'mini-card'; d.style.color = isRed(c)?'#8b1a1a':'#111';
+      d.className = 'mini-card'; 
       d.innerHTML = `<div class="r" style="color:${isRed(c)?'#8b1a1a':'#111'}">${rankDisplay(c)}${suitSymbol(c)}</div>`;
     } else {
       d.className = 'mini-card back';
     }
     commEl.appendChild(d);
   }
+
   // Own cards
   const ownCards = document.getElementById('v3-own-cards');
   ownCards.innerHTML = '';
@@ -973,28 +1005,45 @@ function renderV3(state, me) {
   }
   document.getElementById('v3-own-info').innerHTML = `<div class="nm">${me.name}</div><div class="stk">◈ ${me.stack}</div>`;
 
-  // Opponents
-  const oppContainer = document.getElementById('v3-opponents');
-  oppContainer.innerHTML = '';
-  const opps = state.players.filter(p => p.id !== myId && p.status !== 'out');
-  const n = opps.length;
+  // Opponents — use rAF to get real dimensions after layout
   const el = document.getElementById('v3-table');
-  const W = el.clientWidth || 300, H = el.clientHeight || 200;
-  const cx = W/2, cy = H*0.44;
-  const rx = W*0.30, ry = H*0.30;
-  opps.forEach((p, i) => {
-    const angle = (2*Math.PI*i/n) - Math.PI/2;
-    const x = cx + rx * Math.cos(angle);
-    const y = cy + ry * Math.sin(angle);
-    const div = document.createElement('div');
-    div.className = 'opp-seat';
-    div.style.left = x+'px'; div.style.top = y+'px';
-    div.innerHTML = `
-      <div class="opp-av ${p.isActive?'active':''} ${p.status==='folded'?'folded':''}">${p.avatar}</div>
-      <div class="opp-nm ${p.isActive?'active':''}">${p.name}</div>
-      <div class="opp-stk">◈${p.stack}</div>`;
-    oppContainer.appendChild(div);
-  });
+  const doRender = () => {
+    const oppContainer = document.getElementById('v3-opponents');
+    oppContainer.innerHTML = '';
+    const opps = state.players.filter(p => p.id !== myId && p.status !== 'out');
+    const n = opps.length;
+    if (n === 0) return;
+
+    // Get real dimensions; if still 0 (view hidden) use window as proxy
+    let W = el.clientWidth;
+    let H = el.clientHeight;
+    if (W < 10) { W = window.innerWidth; H = window.innerHeight - 120; }
+
+    const cx = W/2, cy = H*0.42;
+    const rx = W*0.32, ry = H*0.30;
+
+    opps.forEach((p, i) => {
+      const angle = (2*Math.PI*i/n) - Math.PI/2;
+      const x = cx + rx * Math.cos(angle);
+      const y = cy + ry * Math.sin(angle);
+      const div = document.createElement('div');
+      div.className = 'opp-seat';
+      div.style.left = x+'px'; div.style.top = y+'px';
+      div.innerHTML = `
+        <div class="opp-av ${p.isActive?'active':''} ${p.status==='folded'?'folded':''}">${p.avatar}</div>
+        <div class="opp-nm ${p.isActive?'active':''}">${p.name}</div>
+        <div class="opp-stk">◈${p.stack}</div>`;
+      oppContainer.appendChild(div);
+    });
+  };
+
+  // If view is active, render now; otherwise defer until after setView makes it visible
+  if (currentView === 3 && document.getElementById('view-table').classList.contains('active')) {
+    requestAnimationFrame(doRender);
+  } else {
+    // Store for deferred render when view 3 is activated
+    window._v3PendingRender = doRender;
+  }
 }
 
 // ── Action bars ───────────────────────────────────────────────────────
@@ -1073,7 +1122,14 @@ function setView(n) {
   ['view-cards','view-peek','view-table'].forEach((id,i) => {
     document.getElementById(id)?.classList.toggle('active', i+1 === n);
   });
+  // Badge shows NEXT view number
   document.getElementById('vsw-badge').textContent = (n % 3) + 1;
+  // If switching to view 3, trigger deferred opponent render
+  if (n === 3 && window._v3PendingRender) {
+    requestAnimationFrame(() => {
+      if (window._v3PendingRender) { window._v3PendingRender(); window._v3PendingRender = null; }
+    });
+  }
 }
 
 // ── Swipe peek ────────────────────────────────────────────────────────
@@ -1148,10 +1204,26 @@ function showWinner(w) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
+const GAME_SCREENS = new Set(['game-view','wait-turn']);
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id)?.classList.add('active');
+  // Show rotate hint when in game and in portrait
+  const inGame = GAME_SCREENS.has(id);
+  checkOrientation(inGame);
 }
+
+function checkOrientation(inGame) {
+  const hint = document.getElementById('rotate-hint');
+  if (!hint) return;
+  const isPortrait = window.innerHeight > window.innerWidth;
+  hint.classList.toggle('show', inGame && isPortrait);
+}
+
+window.addEventListener('resize', () => {
+  const activeGame = [...GAME_SCREENS].some(id => document.getElementById(id)?.classList.contains('active'));
+  checkOrientation(activeGame);
+});
 function showToast(msg) {
   const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
   document.body.appendChild(t); setTimeout(()=>t.remove(),3500);
@@ -1165,17 +1237,13 @@ function isRed(code)       { return code[1]==='h'||code[1]==='d'; }
 
 // ── FULLSCREEN + LANDSCAPE ────────────────────────────────────────────
 function requestFullscreenAndLandscape() {
-  // Fullscreen
   const el = document.documentElement;
   const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
   if (fn) fn.call(el).catch(()=>{});
-  // Screen orientation lock (works in PWA / Chrome Android)
   if (screen.orientation && screen.orientation.lock) {
     screen.orientation.lock('landscape').catch(()=>{});
   }
 }
-
-// Trigger on first touch/click (browser requires user gesture)
 let phoneFs = false;
 function tryPhoneFs() {
   if (phoneFs) return; phoneFs = true;
@@ -1184,13 +1252,8 @@ function tryPhoneFs() {
 document.addEventListener('touchstart', tryPhoneFs, { once: true });
 document.addEventListener('click',      tryPhoneFs, { once: true });
 
-// ── NEW GAME (server restarted lobby) ────────────────────────────────
-if (socket) {
-  socket.on('new-game-started', () => {
-    myCards = []; gameState = null; isMaster = false; myId = null;
-    showScreen('join');
-  });
-}
+// ── NEW GAME handler is registered inside connectSocket ───────────────
+// (see connectSocket function where socket.on('new-game-started') is added)
 
 // Service Worker
 if ('serviceWorker' in navigator) {

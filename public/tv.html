@@ -70,16 +70,16 @@ body{background:repeating-linear-gradient(91deg,transparent,transparent 80px,rgb
 /* CARDS — animation fires once, then card is completely static (no looping pulse) */
 .card{background:var(--cream);border-radius:6px;border:1.5px solid rgba(0,0,0,.15);position:relative;overflow:hidden;box-shadow:2px 3px 10px rgba(0,0,0,.65);}
 .card::before{content:'';position:absolute;inset:3px;border:1px solid rgba(0,0,0,.07);border-radius:4px;pointer-events:none;}
-.card .cr{position:absolute;top:3px;left:4px;font-family:'IM Fell English',serif;font-weight:700;line-height:1;font-size:clamp(36px,4vw,56px);}
-.card .cs{position:absolute;bottom:3px;right:4px;font-family:'IM Fell English',serif;font-weight:700;line-height:1;transform:rotate(180deg);font-size:clamp(36px,4vw,56px);}
-.card .cc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(64px,7vw,96px);}
+.card .cr{position:absolute;top:3px;left:4px;font-family:'IM Fell English',serif;font-weight:700;line-height:1;}
+.card .cs{position:absolute;bottom:3px;right:4px;font-family:'IM Fell English',serif;font-weight:700;line-height:1;transform:rotate(180deg);}
+.card .cc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
 .card.red .cr,.card.red .cs{color:var(--red);}
 .card.black .cr,.card.black .cs{color:#111;}
 .card.deal-anim{animation:dealIn .4s cubic-bezier(.34,1.4,.64,1) both;}
 @keyframes dealIn{from{transform:scale(.7) translateY(-20px);opacity:0;}to{transform:scale(1);opacity:1;}}
 .card-comm{width:clamp(64px,6.6vw,96px);height:clamp(92px,9.6vw,136px);}
-.card-comm .cr,.card-comm .cs{font-size:clamp(40px,4.4vw,64px);}
-.card-comm .cc{font-size:clamp(80px,8.8vw,128px);}
+.card-comm .cr,.card-comm .cs{font-size:clamp(14px,1.6vw,22px);}
+.card-comm .cc{font-size:clamp(32px,3.4vw,48px);}
 .card-back-tv{background:linear-gradient(145deg,#1e3a7a,#0d1f4a);border:2px solid var(--gold-dark);border-radius:6px;box-shadow:2px 3px 10px rgba(0,0,0,.65);opacity:.55;position:relative;overflow:hidden;}
 .card-back-tv::before{content:'';position:absolute;inset:4px;border:1px solid rgba(200,168,75,.3);border-radius:3px;background:repeating-linear-gradient(45deg,rgba(200,168,75,.06) 0px,rgba(200,168,75,.06) 2px,transparent 2px,transparent 7px);}
 
@@ -104,7 +104,7 @@ body{background:repeating-linear-gradient(91deg,transparent,transparent 80px,rgb
 .name-plate .stk{font-size:clamp(7px,.75vw,10px);color:var(--gold);}
 .name-plate .hn{font-size:clamp(7px,.7vw,9px);color:#adf;letter-spacing:.5px;}
 .mini-cards{display:flex;gap:2px;position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);}
-.mc{width:clamp(20px,2.2vw,32px);height:clamp(28px,3vw,44px);border-radius:2px;background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1px solid var(--gold-dark);}
+.mc{width:clamp(10px,1.1vw,16px);height:clamp(14px,1.5vw,22px);border-radius:2px;background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1px solid var(--gold-dark);}
 .mc.revealed{background:var(--cream);border-color:rgba(0,0,0,.2);}
 .bet-chip{position:absolute;font-size:clamp(7px,.75vw,10px);color:#ffd700;background:rgba(0,0,0,.65);border:1px solid rgba(200,168,75,.35);border-radius:10px;padding:2px 6px;white-space:nowrap;z-index:6;}
 
