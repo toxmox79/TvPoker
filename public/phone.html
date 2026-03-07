@@ -1163,6 +1163,35 @@ function rankDisplay(code) { return {'T':'10','J':'J','Q':'Q','K':'K','A':'A'}[c
 function suitSymbol(code)  { return {'s':'♠','h':'♥','d':'♦','c':'♣'}[code[1]]||code[1]; }
 function isRed(code)       { return code[1]==='h'||code[1]==='d'; }
 
+// ── FULLSCREEN + LANDSCAPE ────────────────────────────────────────────
+function requestFullscreenAndLandscape() {
+  // Fullscreen
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if (fn) fn.call(el).catch(()=>{});
+  // Screen orientation lock (works in PWA / Chrome Android)
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').catch(()=>{});
+  }
+}
+
+// Trigger on first touch/click (browser requires user gesture)
+let phoneFs = false;
+function tryPhoneFs() {
+  if (phoneFs) return; phoneFs = true;
+  requestFullscreenAndLandscape();
+}
+document.addEventListener('touchstart', tryPhoneFs, { once: true });
+document.addEventListener('click',      tryPhoneFs, { once: true });
+
+// ── NEW GAME (server restarted lobby) ────────────────────────────────
+if (socket) {
+  socket.on('new-game-started', () => {
+    myCards = []; gameState = null; isMaster = false; myId = null;
+    showScreen('join');
+  });
+}
+
 // Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});

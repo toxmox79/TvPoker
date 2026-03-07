@@ -581,6 +581,36 @@ io.on('connection', (socket) => {
     handleAction(room, socket.id, action, amount);
   });
 
+  // ── Neue Runde starten (TV-Button) ──
+  socket.on('new-game', () => {
+    const code = socketRoom[socket.id];
+    const room = rooms[code];
+    if (!room) return;
+    // Only TV socket (no player entry) or master can restart
+    const isTv = room.tvSocketId === socket.id;
+    const player = room.players.find(p => p.socketId === socket.id);
+    if (!isTv && !player?.isMaster) return;
+
+    clearTimer(room);
+
+    // Reset room to lobby state, keep same code & settings
+    room.phase = 'lobby';
+    room.players = [];
+    room.communityCards = [];
+    room.pot = 0;
+    room.currentIdx = 0;
+    room.dealerIdx = 0;
+    room.deck = [];
+    room.handNumber = 0;
+    room.highestBet = 0;
+    room.lastRaiseAmount = room.settings.bigBlind;
+    room.handsSinceBlindRaise = 0;
+
+    // Tell everyone to go back to join screen
+    io.to(code).emit('new-game-started');
+    broadcastState(room);
+  });
+
   socket.on('disconnect', () => {
     const code = socketRoom[socket.id];
     if (!code || !rooms[code]) return;
