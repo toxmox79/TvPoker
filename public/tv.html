@@ -529,9 +529,9 @@ function makeCardEl(code, extraClass, delay) {
   }, { once: true });
   var r = rankDisplay(code), s = suitSymbol(code);
   div.innerHTML =
-    '<div class="cr" style="font-size:clamp(8px,.85vw,12px)">' + r + '<br>' + s + '</div>' +
-    '<div class="cc" style="font-size:clamp(16px,1.7vw,24px)">' + s + '</div>' +
-    '<div class="cs" style="font-size:clamp(8px,.85vw,12px)">' + r + '<br>' + s + '</div>';
+    '<div class="cr">' + r + '<br>' + s + '</div>' +
+    '<div class="cc">' + s + '</div>' +
+    '<div class="cs">' + r + '<br>' + s + '</div>';
   return div;
 }
 

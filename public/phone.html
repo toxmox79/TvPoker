@@ -970,14 +970,14 @@ function fillPeekFront(i, code) {
 }
 
 function renderV3(state, me) {
-  // Community
+  // Community cards
   const commEl = document.getElementById('v3-comm');
   commEl.innerHTML = '';
   for (let i = 0; i < 5; i++) {
     const d = document.createElement('div');
     if (state.communityCards[i]) {
       const c = state.communityCards[i];
-      d.className = 'mini-card'; 
+      d.className = 'mini-card';
       d.innerHTML = `<div class="r" style="color:${isRed(c)?'#8b1a1a':'#111'}">${rankDisplay(c)}${suitSymbol(c)}</div>`;
     } else {
       d.className = 'mini-card back';
@@ -988,62 +988,56 @@ function renderV3(state, me) {
   // Own cards
   const ownCards = document.getElementById('v3-own-cards');
   ownCards.innerHTML = '';
-  const show = myCards && myCards.length===2 && !myCards.includes('??');
-  for (let i=0;i<2;i++) {
+  const show = myCards && myCards.length === 2 && !myCards.includes('??');
+  for (let i = 0; i < 2; i++) {
     const d = document.createElement('div');
     if (show) {
       const c = myCards[i];
-      d.className = 'own-card-mini ' + (isRed(c)?'red':'black');
-      d.style.transform = i===0?'rotate(-6deg)':'rotate(6deg)';
-      const r=rankDisplay(c),s=suitSymbol(c);
-      d.innerHTML=`<div class="r">${r}<br>${s}</div><div class="c">${s}</div>`;
+      d.className = 'own-card-mini ' + (isRed(c) ? 'red' : 'black');
+      d.style.transform = i === 0 ? 'rotate(-6deg)' : 'rotate(6deg)';
+      const r = rankDisplay(c), s = suitSymbol(c);
+      d.innerHTML = `<div class="r">${r}<br>${s}</div><div class="c">${s}</div>`;
     } else {
-      d.className='own-card-mini hidden';
-      d.style.transform=i===0?'rotate(-6deg)':'rotate(6deg)';
+      d.className = 'own-card-mini hidden';
+      d.style.transform = i === 0 ? 'rotate(-6deg)' : 'rotate(6deg)';
     }
     ownCards.appendChild(d);
   }
-  document.getElementById('v3-own-info').innerHTML = `<div class="nm">${me.name}</div><div class="stk">◈ ${me.stack}</div>`;
+  document.getElementById('v3-own-info').innerHTML =
+    `<div class="nm">${me.name}</div><div class="stk">◈ ${me.stack}</div>`;
 
-  // Opponents — use rAF to get real dimensions after layout
-  const el = document.getElementById('v3-table');
-  const doRender = () => {
-    const oppContainer = document.getElementById('v3-opponents');
-    oppContainer.innerHTML = '';
-    const opps = state.players.filter(p => p.id !== myId && p.status !== 'out');
-    const n = opps.length;
-    if (n === 0) return;
+  // Opponents: use view-area dimensions (always in DOM, always sized correctly)
+  // v3-table is position:relative inside view-area which is flex:1
+  const viewArea = document.getElementById('game-view');
+  // Measure via view-area; subtract topbar (~52px) and action-bar (~110px)
+  const W = viewArea ? viewArea.clientWidth  || window.innerWidth  : window.innerWidth;
+  const H = viewArea ? (viewArea.clientHeight || window.innerHeight) - 162 : window.innerHeight - 162;
 
-    // Get real dimensions; if still 0 (view hidden) use window as proxy
-    let W = el.clientWidth;
-    let H = el.clientHeight;
-    if (W < 10) { W = window.innerWidth; H = window.innerHeight - 120; }
+  const oppContainer = document.getElementById('v3-opponents');
+  oppContainer.innerHTML = '';
+  const opps = state.players.filter(p => p.id !== myId && p.status !== 'out');
+  const n = opps.length;
+  if (n === 0) return;
 
-    const cx = W/2, cy = H*0.42;
-    const rx = W*0.32, ry = H*0.30;
+  const cx = W / 2;
+  const cy = H * 0.42;
+  const rx = W * 0.33;
+  const ry = H * 0.33;
 
-    opps.forEach((p, i) => {
-      const angle = (2*Math.PI*i/n) - Math.PI/2;
-      const x = cx + rx * Math.cos(angle);
-      const y = cy + ry * Math.sin(angle);
-      const div = document.createElement('div');
-      div.className = 'opp-seat';
-      div.style.left = x+'px'; div.style.top = y+'px';
-      div.innerHTML = `
-        <div class="opp-av ${p.isActive?'active':''} ${p.status==='folded'?'folded':''}">${p.avatar}</div>
-        <div class="opp-nm ${p.isActive?'active':''}">${p.name}</div>
-        <div class="opp-stk">◈${p.stack}</div>`;
-      oppContainer.appendChild(div);
-    });
-  };
-
-  // If view is active, render now; otherwise defer until after setView makes it visible
-  if (currentView === 3 && document.getElementById('view-table').classList.contains('active')) {
-    requestAnimationFrame(doRender);
-  } else {
-    // Store for deferred render when view 3 is activated
-    window._v3PendingRender = doRender;
-  }
+  opps.forEach((p, i) => {
+    const angle = (2 * Math.PI * i / n) - Math.PI / 2;
+    const x = cx + rx * Math.cos(angle);
+    const y = cy + ry * Math.sin(angle);
+    const div = document.createElement('div');
+    div.className = 'opp-seat';
+    div.style.left = x + 'px';
+    div.style.top  = y + 'px';
+    div.innerHTML = `
+      <div class="opp-av ${p.isActive ? 'active' : ''} ${p.status === 'folded' ? 'folded' : ''}">${p.avatar}</div>
+      <div class="opp-nm ${p.isActive ? 'active' : ''}">${p.name}</div>
+      <div class="opp-stk">◈${p.stack}</div>`;
+    oppContainer.appendChild(div);
+  });
 }
 
 // ── Action bars ───────────────────────────────────────────────────────
@@ -1122,13 +1116,11 @@ function setView(n) {
   ['view-cards','view-peek','view-table'].forEach((id,i) => {
     document.getElementById(id)?.classList.toggle('active', i+1 === n);
   });
-  // Badge shows NEXT view number
   document.getElementById('vsw-badge').textContent = (n % 3) + 1;
-  // If switching to view 3, trigger deferred opponent render
-  if (n === 3 && window._v3PendingRender) {
-    requestAnimationFrame(() => {
-      if (window._v3PendingRender) { window._v3PendingRender(); window._v3PendingRender = null; }
-    });
+  // Re-render opponents when switching to view 3 so positions are correct
+  if (n === 3 && gameState) {
+    const me = gameState.players.find(p => p.id === myId);
+    if (me) renderV3(gameState, me);
   }
 }
 
@@ -1244,13 +1236,18 @@ function requestFullscreenAndLandscape() {
     screen.orientation.lock('landscape').catch(()=>{});
   }
 }
+// Browsers need a user gesture. We register on capture phase so we fire
+// BEFORE peekStart_ (which uses default bubbling/capture).
 let phoneFs = false;
-function tryPhoneFs() {
-  if (phoneFs) return; phoneFs = true;
+function tryPhoneFs(e) {
+  if (phoneFs) return;
+  phoneFs = true;
   requestFullscreenAndLandscape();
 }
-document.addEventListener('touchstart', tryPhoneFs, { once: true });
-document.addEventListener('click',      tryPhoneFs, { once: true });
+// Use capture:true so this fires before any other listener
+document.addEventListener('touchstart', tryPhoneFs, { once: true, capture: true });
+document.addEventListener('click',      tryPhoneFs, { once: true, capture: true });
+document.addEventListener('touchend',   tryPhoneFs, { once: true, capture: true });
 
 // ── NEW GAME handler is registered inside connectSocket ───────────────
 // (see connectSocket function where socket.on('new-game-started') is added)
