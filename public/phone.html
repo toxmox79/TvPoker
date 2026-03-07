@@ -5,720 +5,416 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1f140d">
+<meta name="theme-color" content="#1a0e05">
 <title>Royal Poker</title>
 <link rel="manifest" href="/manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Libre+Baskerville&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
-
 :root{
-  --felt1:#1e4a3c;
-  --felt2:#16382e;
-  --wood:#3a2618;
-  --wood-dark:#1f140d;
-  --gold:#d4b06a;
-  --cream:#f4ecda;
-  --fold:#7b1e1e;
-  --call:#1f5e3b;
-  --check:#4b3221;
-  --raise:#b8903f;
+  --felt:#1a4a2e;--felt-dark:#0f2e1c;--felt-light:#2a6040;
+  --wood:#3d1f0a;--wood-light:#6b3a1f;--wood-mid:#4a2510;
+  --gold:#c8a84b;--gold-light:#e8c96a;--gold-dark:#9a7830;
+  --cream:#f5ead5;--red:#8b1a1a;
+  --btn-h:52px;
 }
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;color:var(--cream);background:#1a0e05;touch-action:none;}
 
-html,body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  font-family:"Libre Baskerville",serif;
-  color:var(--cream);
-  background:#0a0603;
-  touch-action:none;
-  margin:0;
-  padding:0;
-}
-
-/* ════════════════════════════════════
-   SCREENS
-════════════════════════════════════ */
-.screen{
-  display:none;
-  width:100%;
-  height:100%;
-  position:absolute;
-  top:0;
-  left:0;
-  flex-direction:column;
-  overflow:hidden;
-}
+/* ── SCREENS ── */
+.screen{display:none;width:100%;height:100%;position:absolute;top:0;left:0;flex-direction:column;overflow:hidden;}
 .screen.active{display:flex;}
 
-/* ════════════════════════════════════
+/* ══════════════════════════════════
    JOIN SCREEN
-════════════════════════════════════ */
+══════════════════════════════════ */
 #join{
-  background:radial-gradient(circle at top,rgba(255,220,140,.2),transparent 60%),
-    linear-gradient(#2a1a11,#0a0603);
+  background:radial-gradient(ellipse at 50% 0%,#2a6040 0%,#1a4a2e 40%,#0a1c10 100%);
   overflow-y:auto;
 }
 .join-inner{
-  min-height:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:32px 20px 32px;
-  gap:20px;
+  min-height:100%;display:flex;flex-direction:column;align-items:center;
+  padding:24px 20px 32px;gap:18px;
 }
 .join-logo{
-  font-family:"Playfair Display",serif;
-  font-size:28px;
-  font-weight:600;
-  color:var(--gold);
-  text-shadow:0 0 20px rgba(212,176,106,.3);
-  letter-spacing:2px;
-  text-align:center;
+  font-family:'Cinzel Decorative',cursive;font-size:22px;color:var(--gold-light);
+  text-shadow:0 0 30px rgba(200,168,75,.5);letter-spacing:3px;text-align:center;
+  padding-top:8px;
 }
-.join-logo small{
-  display:block;
-  font-size:10px;
-  color:rgba(212,176,106,.5);
-  letter-spacing:3px;
-  margin-top:6px;
-  font-weight:400;
-}
+.join-logo small{display:block;font-size:10px;color:rgba(200,168,75,.4);letter-spacing:4px;margin-top:2px;}
 
-.section-lbl{
-  font-size:9px;
-  color:rgba(212,176,106,.6);
-  letter-spacing:2px;
-  text-transform:uppercase;
-  align-self:flex-start;
-  width:100%;
-  margin-top:14px;
-}
+.section-lbl{font-size:9px;color:rgba(200,168,75,.55);letter-spacing:2px;text-transform:uppercase;align-self:flex-start;width:100%;}
 
 /* Avatar grid */
 .avatar-grid{
-  display:grid;
-  grid-template-columns:repeat(6,1fr);
-  gap:8px;
-  width:100%;
+  display:grid;grid-template-columns:repeat(6,1fr);gap:8px;width:100%;
 }
 .av-opt{
-  aspect-ratio:1;
-  border-radius:50%;
-  font-size:24px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,.3);
-  border:2px solid rgba(212,176,106,.3);
-  cursor:pointer;
-  transition:all .2s;
+  aspect-ratio:1;border-radius:50%;font-size:22px;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.4);border:2px solid rgba(200,168,75,.2);
+  cursor:pointer;transition:all .18s;
 }
 .av-opt.sel{
-  border-color:var(--gold);
-  background:rgba(212,176,106,.12);
-  box-shadow:0 0 12px rgba(212,176,106,.25);
-  transform:scale(1.08);
+  border-color:var(--gold-light);background:rgba(200,168,75,.15);
+  box-shadow:0 0 14px rgba(200,168,75,.35);
+  transform:scale(1.1);
 }
 
 /* Inputs */
 .inp{
-  width:100%;
-  background:rgba(0,0,0,.3);
-  border:1.5px solid var(--gold);
-  border-radius:6px;
-  color:var(--cream);
-  font-family:"Libre Baskerville",serif;
-  font-size:14px;
-  padding:11px 12px;
-  outline:none;
+  width:100%;background:rgba(0,0,0,.45);border:1.5px solid var(--gold-dark);
+  border-radius:8px;color:var(--cream);font-family:'Cinzel',serif;
+  font-size:14px;padding:12px 14px;outline:none;
   transition:border-color .2s;
+  -webkit-appearance:none;
 }
-.inp::placeholder{color:rgba(212,176,106,.4);}
-.inp:focus{border-color:rgba(212,176,106,.7);}
+.inp::placeholder{color:rgba(200,168,75,.28);}
+.inp:focus{border-color:var(--gold-light);}
 
 .btn-join{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-family:"Playfair Display",serif;
-  font-weight:600;
-  font-size:15px;
-  letter-spacing:1px;
-  background:linear-gradient(180deg,var(--gold),#b8903f);
-  color:var(--wood);
-  border:1px solid rgba(255,255,255,.2);
-  box-shadow:0 4px 0 #1f140d,0 6px 12px rgba(0,0,0,.5);
-  position:relative;
-  overflow:hidden;
-  transition:transform .1s,box-shadow .1s;
+  width:100%;padding:15px;border:none;border-radius:10px;cursor:pointer;
+  font-family:'Cinzel',serif;font-weight:700;font-size:14px;letter-spacing:2px;
+  background:linear-gradient(180deg,#d4aa50,#9a7830);
+  color:var(--wood);border:1px solid var(--gold-light);
+  box-shadow:0 4px 0 #5a3a10,0 6px 16px rgba(0,0,0,.5);
+  position:relative;overflow:hidden;transition:transform .1s,box-shadow .1s;
 }
-.btn-join:active{
-  transform:translateY(2px);
-  box-shadow:0 2px 0 #1f140d,0 3px 6px rgba(0,0,0,.5);
-}
+.btn-join:active{transform:translateY(2px);box-shadow:0 2px 0 #5a3a10,0 3px 8px rgba(0,0,0,.5);}
+.btn-join::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,transparent 50%);pointer-events:none;}
 
-/* ════════════════════════════════════
-   SETUP SCREEN
-════════════════════════════════════ */
+/* ══════════════════════════════════
+   SETUP SCREEN (Master Settings)
+══════════════════════════════════ */
 #setup{
-  background:radial-gradient(circle at top,rgba(255,220,140,.15),transparent 60%),
-    linear-gradient(#2a1a11,#0a0603);
+  background:radial-gradient(ellipse at 50% 0%,#2a1a08 0%,#1a0e05 100%);
 }
 .setup-header{
-  flex:0 0 auto;
-  padding:12px 14px;
-  background:linear-gradient(180deg,#3a2618,#1f140d);
-  border-bottom:1.5px solid var(--gold);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  box-shadow:0 3px 12px rgba(0,0,0,.6);
+  flex:0 0 auto;padding:14px 16px 12px;
+  background:repeating-linear-gradient(91deg,transparent,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 56px),
+    linear-gradient(180deg,#2a1008 0%,#3d1f0a 100%);
+  border-bottom:1.5px solid var(--gold-dark);
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 3px 16px rgba(0,0,0,.6);
 }
-.setup-title{
-  font-family:"Playfair Display",serif;
-  font-size:15px;
-  font-weight:600;
-  color:var(--gold);
-}
-.master-badge{
-  background:linear-gradient(135deg,var(--gold),#b8903f);
-  color:var(--wood);
-  font-size:8px;
-  letter-spacing:1.5px;
-  padding:4px 10px;
-  border-radius:6px;
-  font-weight:600;
-  font-family:"Playfair Display",serif;
-}
-.setup-body{
-  flex:1;
-  overflow-y:auto;
-  padding:14px 14px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.setup-section{
-  font-size:8px;
-  color:rgba(212,176,106,.6);
-  letter-spacing:2px;
-  text-transform:uppercase;
-  margin-top:10px;
-  padding-bottom:4px;
-  border-bottom:1px solid rgba(212,176,106,.15);
-}
-.setting-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:8px 0;
-}
-.setting-lbl{
-  font-size:12px;
-  color:var(--cream);
-  font-weight:500;
-}
-.setting-sub{
-  font-size:10px;
-  color:rgba(212,176,106,.5);
-  display:block;
-  margin-top:1px;
-}
+.setup-title{font-family:'Cinzel Decorative',cursive;font-size:13px;color:var(--gold-light);}
+.master-badge{background:linear-gradient(135deg,var(--gold-dark),#7a5c20);color:var(--wood);font-size:8px;letter-spacing:1.5px;padding:3px 10px;border-radius:10px;font-weight:700;}
+.setup-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:6px;}
+.setup-section{font-size:8px;color:var(--gold-dark);letter-spacing:2px;text-transform:uppercase;margin-top:10px;padding-bottom:4px;border-bottom:1px solid rgba(200,168,75,.1);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;}
+.setting-lbl{font-size:12px;color:var(--cream);}
+.setting-sub{font-size:9px;color:rgba(200,168,75,.4);letter-spacing:.5px;display:block;margin-top:1px;}
 
-.stepper{display:flex;align-items:center;gap:6px;}
+/* Stepper */
+.stepper{display:flex;align-items:center;gap:8px;}
 .step-btn{
-  width:28px;
-  height:28px;
-  border-radius:4px;
-  border:1.5px solid var(--gold);
-  cursor:pointer;
-  background:rgba(0,0,0,.3);
-  color:var(--gold);
-  font-size:15px;
-  font-family:"Playfair Display",serif;
-  font-weight:600;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  line-height:1;
-  transition:background .15s;
+  width:32px;height:32px;border-radius:6px;border:none;cursor:pointer;
+  background:rgba(0,0,0,.45);border:1.5px solid var(--gold-dark);
+  color:var(--gold-light);font-size:18px;display:flex;align-items:center;justify-content:center;
+  line-height:1;transition:background .15s;
 }
-.step-btn:active{background:rgba(212,176,106,.12);}
-.step-val{
-  min-width:48px;
-  text-align:center;
-  font-size:12px;
-  color:var(--gold);
-  background:rgba(0,0,0,.3);
-  border:1px solid var(--gold);
-  border-radius:4px;
-  padding:4px 6px;
-  font-family:"Libre Baskerville",serif;
-}
+.step-btn:active{background:rgba(200,168,75,.15);}
+.step-val{min-width:56px;text-align:center;font-size:13px;color:var(--gold-light);background:rgba(0,0,0,.4);border:1px solid var(--gold-dark);border-radius:6px;padding:4px 6px;}
+
+/* Toggle */
+.toggle{width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:linear-gradient(90deg,#2a6a2a,#3a8a3a);}
+.toggle.off{background:rgba(0,0,0,.4);border:1.5px solid rgba(200,168,75,.2);}
+.toggle::after{content:'';position:absolute;top:2px;width:20px;height:20px;border-radius:50%;background:var(--cream);box-shadow:0 1px 4px rgba(0,0,0,.4);transition:left .2s;}
+.toggle.on::after{left:22px;}
+.toggle.off::after{left:2px;}
+
+/* Segmented */
+.seg{display:flex;background:rgba(0,0,0,.4);border:1.5px solid var(--gold-dark);border-radius:8px;overflow:hidden;}
+.seg-opt{flex:1;padding:7px 4px;font-size:9px;text-align:center;cursor:pointer;letter-spacing:.5px;transition:background .15s;color:rgba(200,168,75,.5);}
+.seg-opt.sel{background:linear-gradient(135deg,var(--gold-dark),#7a5c20);color:var(--wood);font-weight:700;}
 
 .setup-footer{
-  flex:0 0 auto;
-  padding:12px 14px 16px;
-  background:linear-gradient(180deg,#3a2618,#1f140d);
-  border-top:1.5px solid var(--gold);
+  flex:0 0 auto;padding:12px 16px 20px;
+  background:repeating-linear-gradient(91deg,transparent,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 56px),
+    linear-gradient(180deg,#2a1008 0%,#3d1f0a 100%);
+  border-top:1.5px solid var(--gold-dark);
 }
 .btn-start{
-  width:100%;
-  padding:13px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-family:"Playfair Display",serif;
-  font-weight:600;
-  font-size:14px;
-  letter-spacing:1px;
-  background:linear-gradient(180deg,#1f5e3b,#0d3a20);
-  color:#b8e8b8;
-  border:1px solid rgba(63,154,63,.2);
-  box-shadow:0 4px 0 #051208,0 6px 10px rgba(0,0,0,.5);
-  position:relative;
-  overflow:hidden;
-  transition:transform .1s,box-shadow .1s;
+  width:100%;padding:16px;border:none;border-radius:10px;cursor:pointer;
+  font-family:'Cinzel',serif;font-weight:700;font-size:14px;letter-spacing:2px;
+  background:linear-gradient(180deg,#3a8a3a,#1a4a1a);
+  color:#d0ffd0;border:1px solid #4aaa4a;
+  box-shadow:0 4px 0 #082008,0 6px 16px rgba(0,0,0,.5);
+  position:relative;overflow:hidden;
 }
-.btn-start:active{
-  transform:translateY(2px);
-  box-shadow:0 2px 0 #051208,0 3px 5px rgba(0,0,0,.5);
-}
+.btn-start::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,transparent 50%);pointer-events:none;}
+.btn-start:active{transform:translateY(2px);}
 
+/* Waiting for start (non-master) */
 .wait-start{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:18px;
-  padding:24px;
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;
 }
-.wait-av{
-  width:66px;
-  height:66px;
-  border-radius:50%;
-  font-size:32px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:radial-gradient(135deg,#3a2618,#1f140d);
-  border:2px solid var(--gold);
-  box-shadow:0 4px 16px rgba(0,0,0,.6);
-}
-.wait-name{
-  font-family:"Playfair Display",serif;
-  font-size:15px;
-  font-weight:600;
-  color:var(--gold);
-}
-.wait-info{
-  font-size:11px;
-  color:rgba(212,176,106,.5);
-  letter-spacing:.5px;
-  text-align:center;
-  line-height:1.6;
-}
-.pulse-ring{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  background:rgba(212,176,106,.08);
-  border:1px solid var(--gold);
-  border-radius:14px;
-  padding:6px 14px;
-  font-size:10px;
-  color:var(--gold);
-}
-.dot{
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:var(--gold);
-  box-shadow:0 0 6px var(--gold);
-  animation:blink 1.2s ease-in-out infinite;
-}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
-.players-joined-list{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-.pj-av{
-  width:32px;
-  height:32px;
-  border-radius:50%;
-  font-size:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:radial-gradient(135deg,#3a2618,#1f140d);
-  border:1.5px solid var(--gold);
-}
+.wait-av{width:80px;height:80px;border-radius:50%;font-size:40px;display:flex;align-items:center;justify-content:center;background:radial-gradient(135deg,#4a2510,#2a1008);border:2px solid var(--gold-dark);box-shadow:0 4px 20px rgba(0,0,0,.6);}
+.wait-name{font-family:'Cinzel Decorative',cursive;font-size:16px;color:var(--gold-light);}
+.wait-info{font-size:11px;color:rgba(200,168,75,.5);letter-spacing:1px;text-align:center;line-height:1.6;}
+.pulse-ring{display:inline-flex;align-items:center;gap:6px;background:rgba(200,168,75,.1);border:1px solid var(--gold-dark);border-radius:20px;padding:6px 16px;font-size:10px;color:var(--gold);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:blink 1.2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.15;}}
+.players-joined-list{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.pj-av{width:36px;height:36px;border-radius:50%;font-size:18px;display:flex;align-items:center;justify-content:center;background:radial-gradient(135deg,#4a2510,#2a1008);border:1.5px solid var(--gold-dark);}
 
-/* ════════════════════════════════════
+/* ══════════════════════════════════
    GAME SCREEN
-════════════════════════════════════ */
-#game-view{
-  background:radial-gradient(circle at top,rgba(255,220,140,.15),transparent 60%),
-    linear-gradient(#2a1a11,#0a0603);
-}
+══════════════════════════════════ */
+#game-view{background:radial-gradient(ellipse at 50% 30%,var(--felt-light) 0%,var(--felt) 45%,var(--felt-dark) 100%);}
 
-.nav{
-  display:flex;
-  gap:8px;
-  padding:10px;
-  justify-content:center;
-  background:rgba(0,0,0,.2);
+/* Top bar */
+.game-topbar{
+  flex:0 0 auto;padding:8px 12px 6px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(200,168,75,.18);
+  background:rgba(0,0,0,.25);
 }
-
-.nav button{
-  background:var(--wood);
-  color:var(--cream);
-  border:1px solid var(--gold);
-  padding:8px 14px;
-  border-radius:6px;
-  font-family:"Playfair Display",serif;
-  font-weight:600;
-  font-size:11px;
-  cursor:pointer;
-  transition:all .2s;
-}
-
-.nav button.active{
-  background:var(--gold);
-  color:var(--wood);
-}
-
-.nav button:active{
-  transform:scale(.96);
-}
-
-/* View area */
-.view-area{
-  flex:1;
+.g-name{font-family:'Cinzel Decorative',cursive;font-size:11px;color:var(--gold-light);}
+.turn-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(200,168,75,.12);border:1px solid var(--gold-dark);border-radius:10px;padding:3px 9px;font-size:9px;color:var(--gold);letter-spacing:.5px;}
+.g-stack{font-size:12px;color:var(--cream);}
+.vsw-btn{
+  width:34px;height:34px;border-radius:8px;border:none;cursor:pointer;
+  background:rgba(0,0,0,.4);border:1.5px solid var(--gold-dark);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
   position:relative;
-  overflow:hidden;
 }
-.view{
-  display:none;
-  position:absolute;
-  inset:0;
-  flex-direction:column;
+.vsw-badge{
+  position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;
+  background:var(--gold);color:var(--wood);font-size:7px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;border:1.5px solid var(--wood);
+  font-family:'Cinzel',serif;
 }
+
+/* View container */
+.view-area{flex:1;position:relative;overflow:hidden;}
+.view{display:none;position:absolute;inset:0;flex-direction:column;}
 .view.active{display:flex;}
 
-/* ══════ VIEW 1 – Hand ══════ */
-#view1{
-  background:radial-gradient(circle at top,var(--felt1),var(--felt2));
-}
-
-.card-area{
-  flex:1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:30px;
-  padding:10px;
-  cursor:pointer;
-}
-
-.cards{
-  display:flex;
-  gap:30px;
-  perspective:1000px;
-  pointer-events:none;
-}
-
-.card{
-  width:130px;
-  height:190px;
-  border-radius:14px;
-  position:relative;
-  transform-style:preserve-3d;
-  transition:transform .5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .5s;
-  box-shadow:0 12px 30px rgba(0,0,0,.6);
-}
-
-.card:not(.flip){
-  box-shadow:0 0 30px var(--gold);
-}
-
-.card-face{
-  position:absolute;
-  width:100%;
-  height:100%;
-  backface-visibility:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:42px;
-  border-radius:14px;
-  font-weight:700;
-}
-
-.front{
-  background:white;
-  color:black;
-}
-
-.back{
-  background:repeating-linear-gradient(
-    45deg,
-    #1d3f72,
-    #1d3f72 6px,
-    #16355f 6px,
-    #16355f 12px
-  );
-  transform:rotateY(180deg);
-}
-
-.flip{
-  transform:rotateY(180deg);
-}
-
-/* ══════ VIEW 2 – Peek ══════ */
-#view2{
-  background:radial-gradient(circle at top,var(--felt1),var(--felt2));
-}
-
-.peek-area{
-  flex:1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  gap:20px;
+/* VIEW 1 – Cards visible */
+.cards-area{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:20px;
   padding:10px;
 }
+.hand-card{
+  width:clamp(130px,36vw,180px);height:clamp(190px,52vw,262px);
+  border-radius:12px;background:var(--cream);
+  border:1.5px solid rgba(0,0,0,.15);
+  box-shadow:3px 5px 18px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.8);
+  position:relative;overflow:hidden;
+}
+.hand-card::before{content:'';position:absolute;inset:5px;border:1px solid rgba(0,0,0,.07);border-radius:9px;}
+.hc-tl{position:absolute;top:8px;left:9px;font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;font-size:clamp(22px,6vw,32px);}
+.hc-c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(70px,18vw,100px);}
+.hc-br{position:absolute;bottom:8px;right:9px;font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;font-size:clamp(22px,6vw,32px);transform:rotate(180deg);}
+.hand-card.red .hc-tl,.hand-card.red .hc-br{color:var(--red);}
+.hand-card.red .hc-c{color:var(--red);}
+.hand-card.black .hc-tl,.hand-card.black .hc-br{color:#111;}
+.hand-card.black .hc-c{color:#111;}
+.hand-card.hidden .hc-tl,.hand-card.hidden .hc-br,.hand-card.hidden .hc-c{display:none;}
+.hand-card.hidden{background:linear-gradient(145deg,#1e3a7a,#0d1f4a);border:2px solid var(--gold-dark);}
+.hand-card.hidden::after{content:'♠';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;color:rgba(200,168,75,.18);}
+.hand-card.hidden::before{background:repeating-linear-gradient(45deg,rgba(200,168,75,.05) 0px,rgba(200,168,75,.05) 2px,transparent 2px,transparent 8px);}
 
-.peek-hint{
-  font-size:10px;
-  color:rgba(212,176,106,.5);
-  letter-spacing:.5px;
-  text-transform:uppercase;
-  text-align:center;
-  margin-bottom:10px;
+/* ══════════════════════════════════
+   GAME VIEWS — LANDSCAPE LAYOUT
+   Left: content area | Right: action panel
+══════════════════════════════════ */
+.view{display:none;position:absolute;inset:0;flex-direction:row;}
+.view.active{display:flex;}
+
+/* ── LEFT PANEL (cards / table) ── */
+.vl{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
+
+/* ── RIGHT PANEL (buttons + knob) ── */
+.vr{
+  width:120px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  background:
+    repeating-linear-gradient(180deg,transparent,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 56px),
+    linear-gradient(90deg,#2a1008,#3d1f0a);
+  border-left:2px solid var(--gold-dark);
+  padding:8px 6px 10px;gap:5px;
+}
+.vr::before{content:'';position:absolute;right:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,var(--gold-dark) 20%,var(--gold-light) 50%,var(--gold-dark) 80%,transparent);opacity:.4;}
+
+/* Action buttons — vertical stack */
+.vbtns{display:flex;flex-direction:column;gap:5px;width:100%;}
+.abtn{
+  width:100%;height:38px;border:none;border-radius:7px;cursor:pointer;
+  font-family:'Cinzel',serif;font-weight:700;font-size:9px;letter-spacing:.5px;
+  position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:1px;transition:transform .1s,box-shadow .1s;
+}
+.abtn:active{transform:scale(.95);}
+.abtn::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,transparent 50%);pointer-events:none;}
+.abtn .a-icon{font-size:13px;line-height:1;}
+.abtn .a-lbl{font-size:7px;letter-spacing:.8px;}
+.abtn.fold {background:linear-gradient(180deg,#7a1a1a,#4a0f0f);color:#ffb3b3;border:1px solid #9a2a2a;box-shadow:0 3px 0 #2a0808;}
+.abtn.check{background:linear-gradient(180deg,#1a4a7a,#0f2a4a);color:#b3d4ff;border:1px solid #2a5a9a;box-shadow:0 3px 0 #081828;}
+.abtn.call {background:linear-gradient(180deg,#2a6a2a,#1a3a1a);color:#b3ffb3;border:1px solid #3a8a3a;box-shadow:0 3px 0 #081808;}
+.abtn.raise{background:linear-gradient(180deg,#8a6a10,#5a4008);color:#ffe090;border:1px solid var(--gold);box-shadow:0 3px 0 #2a1a04;}
+.abtn.allin{background:linear-gradient(180deg,#8a1a8a,#4a0a4a);color:#ffb3ff;border:1px solid #aa3aaa;box-shadow:0 3px 0 #280828;}
+.abtn:disabled{opacity:.3;pointer-events:none;}
+
+/* ── ROTARY KNOB for Raise ── */
+.knob-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;
+}
+.knob-lbl{font-size:7px;color:rgba(200,168,75,.5);letter-spacing:1px;text-transform:uppercase;}
+.knob-val{font-size:9px;color:var(--gold-light);background:rgba(0,0,0,.5);border:1px solid var(--gold-dark);border-radius:5px;padding:2px 4px;min-width:60px;text-align:center;}
+.knob{
+  width:64px;height:64px;border-radius:50%;position:relative;cursor:grab;
+  background:radial-gradient(circle at 35% 30%,#5a3010,#2a1008);
+  border:2px solid var(--gold-dark);
+  box-shadow:0 4px 12px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(200,168,75,.1);
+  touch-action:none;user-select:none;
+}
+.knob::before{
+  content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
+  width:4px;height:14px;border-radius:2px;
+  background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));
+  box-shadow:0 0 4px rgba(200,168,75,.6);
+  transform-origin:2px 26px;
+}
+.knob-notch{
+  position:absolute;top:6px;left:50%;
+  width:4px;height:14px;border-radius:2px;
+  background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));
+  box-shadow:0 0 6px rgba(200,168,75,.7);
+  transform-origin:2px 26px;transform:translateX(-50%);
 }
 
-/* ══════ VIEW 3 – Table ══════ */
-#view3{
-  background:radial-gradient(circle at top,var(--felt1),var(--felt2));
+/* VIEW 1 — big cards view */
+#view-cards{background:radial-gradient(ellipse at 35% 50%,var(--felt-light) 0%,var(--felt) 45%,var(--felt-dark) 100%);}
+.cards-area{display:flex;align-items:center;justify-content:center;gap:16px;flex:1;padding:8px;}
+.info-strip{display:flex;align-items:center;justify-content:center;gap:10px;padding:4px 8px;font-size:9px;color:rgba(200,168,75,.5);letter-spacing:1px;}
+.pot-pill{background:rgba(0,0,0,.45);border:1px solid var(--gold-dark);border-radius:12px;padding:3px 10px;font-size:10px;color:var(--gold-light);}
+
+/* VIEW 2 — peek/swipe */
+#view-peek{background:radial-gradient(ellipse at 35% 50%,var(--felt-light) 0%,var(--felt) 45%,var(--felt-dark) 100%);}
+.peek-top{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;position:relative;padding:8px;touch-action:none;
 }
+.peek-info{position:absolute;top:8px;left:0;right:0;display:flex;justify-content:center;gap:10px;}
+.peek-hint{display:flex;flex-direction:column;align-items:center;gap:4px;transition:opacity .3s;pointer-events:none;}
+.peek-hint span{font-family:'IM Fell English',serif;font-style:italic;font-size:9px;color:rgba(200,168,75,.45);letter-spacing:1px;}
+.hint-arrows{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.ha{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:7px solid rgba(200,168,75,.4);animation:ap 1.4s ease-in-out infinite;}
+.ha:nth-child(2){animation-delay:.18s;opacity:.55;}
+.ha:nth-child(3){animation-delay:.36s;opacity:.28;}
+@keyframes ap{0%,100%{opacity:.18;}60%{opacity:1;}}
+.peek-pair{display:flex;gap:16px;position:relative;}
+.peek-wrap{width:clamp(80px,22vh,120px);height:clamp(116px,32vh,174px);position:relative;}
+.pk-back{position:absolute;inset:0;border-radius:8px;background:linear-gradient(145deg,#1e3a7a,#0d1f4a);border:2px solid var(--gold-dark);box-shadow:3px 5px 16px rgba(0,0,0,.7);overflow:hidden;z-index:2;}
+.pk-back::before{content:'';position:absolute;inset:5px;border:1px solid rgba(200,168,75,.3);border-radius:4px;background:repeating-linear-gradient(45deg,rgba(200,168,75,.06) 0px,rgba(200,168,75,.06) 2px,transparent 2px,transparent 8px);}
+.pk-back::after{content:'♠';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;color:rgba(200,168,75,.15);}
+.pk-front{position:absolute;inset:0;border-radius:8px;background:var(--cream);border:1.5px solid rgba(0,0,0,.15);box-shadow:3px 5px 16px rgba(0,0,0,.5);overflow:hidden;z-index:1;}
+.pk-front::before{content:'';position:absolute;inset:4px;border:1px solid rgba(0,0,0,.07);border-radius:5px;}
+.pk-front .hc-tl{top:5px;left:6px;font-size:clamp(11px,3vh,16px);}
+.pk-front .hc-c{font-size:clamp(30px,9vh,46px);}
+.pk-front .hc-br{bottom:5px;right:6px;font-size:clamp(11px,3vh,16px);}
+.peek-shadow{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:70%;height:7px;border-radius:50%;background:rgba(0,0,0,.4);filter:blur(3px);transition:all .1s;}
 
-.table-area{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  gap:15px;
-  font-size:12px;
-  color:var(--cream);
-  text-align:center;
+/* VIEW 3 — table overview */
+#view-table{background:radial-gradient(ellipse at 35% 50%,var(--felt-light) 0%,var(--felt) 40%,#0a1c10 100%);}
+.table-mini{flex:1;position:relative;overflow:hidden;}
+.mini-oval{
+  position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  width:88%;aspect-ratio:1.6;border-radius:50%;
+  background:radial-gradient(var(--felt-light) 0%,var(--felt) 60%,#0d3020 100%);
+  border:3px solid var(--wood-light);
+  box-shadow:0 0 0 1px var(--gold-dark),0 4px 20px rgba(0,0,0,.8);
 }
+.comm-mini{position:absolute;left:50%;top:35%;transform:translate(-50%,-50%);display:flex;gap:3px;z-index:5;}
+.mini-card{width:clamp(18px,4vh,26px);height:clamp(26px,6vh,38px);border-radius:3px;background:var(--cream);border:1px solid rgba(0,0,0,.15);box-shadow:1px 2px 4px rgba(0,0,0,.5);position:relative;}
+.mini-card.back{background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1.5px solid var(--gold-dark);opacity:.6;}
+.mini-card .r{position:absolute;top:1px;left:2px;font-size:clamp(5px,1.3vh,8px);font-family:'IM Fell English',serif;font-weight:700;line-height:1;}
+.pot-mini{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);z-index:5;}
+.opp-seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:6;transform:translate(-50%,-50%);}
+.opp-av{width:clamp(26px,6vh,36px);height:clamp(26px,6vh,36px);border-radius:50%;font-size:clamp(13px,3vh,18px);display:flex;align-items:center;justify-content:center;background:radial-gradient(135deg,#4a2510,#2a1008);border:1.5px solid var(--gold-dark);box-shadow:0 2px 6px rgba(0,0,0,.6);}
+.opp-av.active{border-color:var(--gold-light);box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 8px rgba(200,168,75,.4);}
+.opp-av.folded{opacity:.3;filter:grayscale(.8);}
+.opp-nm{font-size:clamp(6px,1.4vh,8px);background:rgba(0,0,0,.6);border:1px solid rgba(200,168,75,.2);border-radius:3px;padding:1px 4px;white-space:nowrap;}
+.opp-nm.active{color:var(--gold-light);}
+.opp-stk{font-size:clamp(6px,1.3vh,7px);color:var(--gold);white-space:nowrap;}
+/* Own cards in V3 — bottom center, above table edge, NOT overlapping community */
+.own-cards-mini{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:7;}
+.own-card-mini{width:clamp(28px,7vh,40px);height:clamp(40px,10vh,58px);border-radius:5px;background:var(--cream);border:1.5px solid rgba(0,0,0,.15);box-shadow:2px 3px 8px rgba(0,0,0,.6);position:relative;overflow:hidden;}
+.own-card-mini::before{content:'';position:absolute;inset:2px;border:1px solid rgba(0,0,0,.07);border-radius:3px;}
+.own-card-mini .r{position:absolute;top:2px;left:3px;font-size:clamp(7px,1.8vh,9px);font-family:'IM Fell English',serif;font-weight:700;line-height:1.1;}
+.own-card-mini .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(16px,4vh,22px);}
+.own-card-mini.red .r,.own-card-mini.red .c{color:var(--red);}
+.own-card-mini.black .r,.own-card-mini.black .c{color:#111;}
+.own-card-mini.hidden{background:linear-gradient(145deg,#1e3a7a,#0d1f4a);border-color:var(--gold-dark);}
+.own-card-mini.hidden .r,.own-card-mini.hidden .c{display:none;}
+.own-info-mini{position:absolute;bottom:12px;left:6px;z-index:7;display:flex;flex-direction:column;gap:1px;}
+.own-info-mini .nm{font-family:'Cinzel Decorative',cursive;font-size:8px;color:var(--gold-light);}
+.own-info-mini .stk{font-size:8px;color:var(--cream);}
 
-.table-info{
-  font-size:13px;
-  color:var(--gold);
-  font-weight:600;
-  margin-bottom:10px;
+/* Fullscreen button overlay */
+#fs-phone-btn{
+  position:fixed;bottom:50%;right:4px;transform:translateY(50%);z-index:150;
+  background:rgba(0,0,0,.7);border:1px solid rgba(200,168,75,.4);border-radius:8px;
+  color:rgba(200,168,75,.8);font-size:18px;padding:8px 5px;cursor:pointer;
+  display:none;line-height:1;
 }
+#fs-phone-btn.show{display:block;}
 
-/* Action buttons (Grid layout) */
-.actions{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  padding:16px;
-  background:linear-gradient(180deg,var(--wood),var(--wood-dark));
+/* Rotate hint overlay */
+#rotate-hint{
+  display:none;position:fixed;inset:0;z-index:300;
+  background:rgba(10,4,2,.95);flex-direction:column;align-items:center;justify-content:center;gap:16px;
 }
+#rotate-hint.show{display:flex;}
+#rotate-hint .ri{font-size:64px;animation:rotHint 1.4s ease-in-out infinite;}
+@keyframes rotHint{0%,100%{transform:rotate(0deg);}50%{transform:rotate(90deg);}}
+#rotate-hint p{font-family:'Cinzel',serif;font-size:13px;color:rgba(200,168,75,.7);letter-spacing:2px;text-align:center;line-height:1.7;}
 
-.actions button{
-  padding:16px 8px;
-  font-size:15px;
-  border:none;
-  border-radius:10px;
-  color:white;
-  font-family:"Playfair Display",serif;
-  font-weight:600;
-  cursor:pointer;
-  transition:transform .1s,box-shadow .1s;
+/* ══════════════════════════════════
+   WAITING SCREEN (not your turn)
+══════════════════════════════════ */
+#wait-turn{
+  background:radial-gradient(ellipse at 50% 30%,var(--felt-light) 0%,var(--felt) 40%,var(--felt-dark) 100%);
 }
+.wt-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;}
+.wt-av{width:70px;height:70px;border-radius:50%;font-size:34px;display:flex;align-items:center;justify-content:center;background:radial-gradient(135deg,#4a2510,#2a1008);border:2px solid var(--gold-dark);box-shadow:0 4px 20px rgba(0,0,0,.6);}
+.wt-name{font-family:'Cinzel Decorative',cursive;font-size:15px;color:var(--gold-light);}
+.wt-active{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(200,168,75,.65);letter-spacing:1px;background:rgba(0,0,0,.35);border:1px solid var(--gold-dark);border-radius:12px;padding:5px 14px;}
+.wt-cards{display:flex;gap:10px;}
+.wt-card{width:50px;height:72px;border-radius:7px;background:linear-gradient(145deg,#1e3a7a,#0d1f4a);border:2px solid var(--gold-dark);box-shadow:2px 3px 12px rgba(0,0,0,.6);position:relative;overflow:hidden;}
+.wt-card::before{content:'';position:absolute;inset:4px;border:1px solid rgba(200,168,75,.25);border-radius:4px;background:repeating-linear-gradient(45deg,rgba(200,168,75,.05) 0px,rgba(200,168,75,.05) 2px,transparent 2px,transparent 8px);}
+.wt-info{font-size:10px;color:rgba(200,168,75,.4);letter-spacing:1.5px;text-transform:uppercase;}
+.comm-preview{display:flex;gap:5px;align-items:center;}
+.comm-preview .mc{width:22px;height:32px;border-radius:3px;background:var(--cream);border:1px solid rgba(0,0,0,.15);box-shadow:1px 1px 4px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;}
+.comm-preview .mc-back{background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1.5px solid var(--gold-dark);}
 
-.actions button:active{
-  transform:scale(.96);
-}
-
-.fold{background:var(--fold);box-shadow:0 4px 0 rgba(0,0,0,.4);}
-.check{background:var(--check);box-shadow:0 4px 0 rgba(0,0,0,.4);}
-.call{background:var(--call);box-shadow:0 4px 0 rgba(0,0,0,.4);}
-.raise{background:var(--raise);box-shadow:0 4px 0 rgba(0,0,0,.4);}
-
-/* ════════════════════════════════════
-   RAISE PANEL
-════════════════════════════════════ */
-.raise-panel{
-  position:absolute;
-  bottom:90px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#1a120d;
-  border:2px solid var(--gold);
-  padding:20px;
-  border-radius:12px;
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  z-index:100;
-  width:90%;
-  max-width:280px;
-  box-shadow:0 12px 30px rgba(0,0,0,.8);
-}
-
-.raise-panel.active{
-  display:flex;
-}
-
-.raise-slider-container{
-  width:100%;
-  margin:12px 0;
-}
-
-.raise-slider{
-  width:100%;
-  height:40px;
-  background:linear-gradient(90deg,#3a2618,var(--gold));
-  border-radius:20px;
-  outline:none;
-  -webkit-appearance:none;
-  appearance:none;
-  cursor:pointer;
-}
-
-.raise-slider::-webkit-slider-thumb{
-  -webkit-appearance:none;
-  appearance:none;
-  width:30px;
-  height:30px;
-  border-radius:50%;
-  background:var(--gold);
-  border:2px solid white;
-  cursor:pointer;
-  box-shadow:0 2px 10px rgba(0,0,0,.5);
-}
-
-.raise-slider::-moz-range-thumb{
-  width:30px;
-  height:30px;
-  border-radius:50%;
-  background:var(--gold);
-  border:2px solid white;
-  cursor:pointer;
-  box-shadow:0 2px 10px rgba(0,0,0,.5);
-}
-
-.raise-presets{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-  margin:15px 0;
-}
-
-.preset-btn{
-  background:var(--wood);
-  color:var(--cream);
-  border:1px solid var(--gold);
-  padding:8px 14px;
-  border-radius:20px;
-  font-family:"Playfair Display",serif;
-  font-weight:600;
-  font-size:11px;
-  cursor:pointer;
-  transition:all .2s;
-}
-
-.preset-btn:active{
-  background:var(--gold);
-  color:var(--wood);
-  transform:scale(.95);
-}
-
-.raise-value{
-  margin:12px 0;
-  font-size:18px;
-  color:var(--gold);
-  font-weight:600;
-  font-family:"Playfair Display",serif;
-}
-
-.confirm{
-  margin-top:12px;
-  display:flex;
-  gap:10px;
-}
-
-.confirm button{
-  flex:1;
-  padding:10px 12px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-family:"Playfair Display",serif;
-  font-weight:600;
-  font-size:12px;
-  transition:transform .1s;
-}
-
-.confirm button:active{
-  transform:scale(.96);
-}
-
-.confirm-raise{
-  background:var(--gold);
-  color:var(--wood);
-}
-
-.cancel{
-  background:#555;
-  color:white;
-}
-
-/* Toast */
+/* ══════════════════════════════════
+   TOAST / OVERLAY
+══════════════════════════════════ */
 .toast{
-  position:fixed;
-  top:70px;
-  left:50%;
-  transform:translateX(-50%);
-  background:rgba(0,0,0,.85);
-  border:1px solid var(--gold);
-  border-radius:8px;
-  padding:10px 20px;
-  font-size:11px;
-  color:var(--gold);
-  letter-spacing:1px;
-  z-index:100;
-  animation:toastIn .3s ease;
-  white-space:nowrap;
-  box-shadow:0 4px 16px rgba(0,0,0,.7);
-  display:none;
+  position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.85);border:1px solid var(--gold-dark);border-radius:10px;
+  padding:8px 20px;font-size:11px;color:var(--gold-light);letter-spacing:1px;
+  z-index:100;animation:toastIn .3s ease;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.7);
 }
-.toast.show{
-  display:block;
-}
-@keyframes toastIn{
-  from{opacity:0;transform:translateX(-50%) translateY(-8px);}
-  to{opacity:1;transform:translateX(-50%) translateY(0);}
-}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 
+/* Winner overlay on phone */
+.win-overlay{
+  position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.75);
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;
+}
+.win-overlay.show{display:flex;}
+.wo-banner{font-family:'Cinzel Decorative',cursive;font-size:18px;color:var(--gold-light);text-shadow:0 0 30px rgba(200,168,75,.6);text-align:center;}
+.wo-box{background:rgba(20,10,4,.92);border:2px solid var(--gold-dark);border-radius:14px;padding:14px 22px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.8);}
+.wo-av{font-size:40px;}
+.wo-name{font-size:14px;color:var(--cream);}
+.wo-hand{font-size:10px;color:var(--gold);letter-spacing:1px;}
+.wo-amt{font-size:20px;color:var(--gold-light);text-shadow:0 0 14px rgba(200,168,75,.5);}
+.wo-cd{font-size:10px;color:rgba(200,168,75,.4);letter-spacing:2px;}
 </style>
 </head>
 <body>
@@ -726,7 +422,7 @@ html,body{
 <!-- ══════════ JOIN ══════════ -->
 <div id="join" class="screen active">
   <div class="join-inner">
-    <div class="join-logo">♠ Royal Poker<small>Texas Hold'em</small></div>
+    <div class="join-logo">♠ Royal Poker<small>TEXAS HOLD'EM</small></div>
 
     <div class="section-lbl">Wähle deinen Avatar</div>
     <div class="avatar-grid" id="av-grid">
@@ -745,20 +441,20 @@ html,body{
     </div>
 
     <div class="section-lbl">Dein Name</div>
-    <input class="inp" id="inp-name" type="text" placeholder="Name eingeben" maxlength="14">
+    <input class="inp" id="inp-name" type="text" placeholder="Name eingeben..." maxlength="14">
 
     <div class="section-lbl">Raum-Code</div>
-    <input class="inp" id="inp-code" type="text" placeholder="z.B. ABC-123" maxlength="7" style="letter-spacing:2px;text-transform:uppercase;">
+    <input class="inp" id="inp-code" type="text" placeholder="z.B. RYL-472" maxlength="7" style="letter-spacing:4px;text-transform:uppercase;">
 
     <button class="btn-join" id="btn-join-now">♠ Beitreten</button>
-    <div id="join-error" style="font-size:10px;color:#ff8888;letter-spacing:.5px;min-height:14px;text-align:center;"></div>
+    <div id="join-error" style="font-size:11px;color:#ff8080;letter-spacing:1px;min-height:16px;text-align:center;"></div>
   </div>
 </div>
 
-<!-- ══════════ SETUP ══════════ -->
+<!-- ══════════ SETUP (Master + Waiting) ══════════ -->
 <div id="setup" class="screen">
   <!-- Master panel -->
-  <div id="setup-master" style="display:none;height:100%;flex-direction:column;">
+  <div id="setup-master" style="display:none;height:100%;flex-direction:column;display:none;">
     <div class="setup-header">
       <div class="setup-title">⚙ Spieleinstellungen</div>
       <div class="master-badge">MASTER</div>
@@ -767,280 +463,961 @@ html,body{
 
       <div class="setup-section">Spieler</div>
       <div class="setting-row">
-        <div><div class="setting-lbl">Bots hinzufügen</div></div>
+        <div><div class="setting-lbl">Bots hinzufügen</div><span class="setting-sub">KI-Gegner</span></div>
         <div class="stepper">
           <button class="step-btn" onclick="stepSetting('botCount',-1)">−</button>
           <div class="step-val" id="sv-botCount">0</div>
           <button class="step-btn" onclick="stepSetting('botCount',1)">+</button>
         </div>
       </div>
-
-      <div class="setup-section">Blinds</div>
       <div class="setting-row">
-        <div><div class="setting-lbl">Small Blind</div></div>
+        <div><div class="setting-lbl">Bot-Level</div></div>
+        <div class="seg" id="seg-diff">
+          <div class="seg-opt" data-val="easy" onclick="setSeg('botDifficulty','easy')">Leicht</div>
+          <div class="seg-opt sel" data-val="medium" onclick="setSeg('botDifficulty','medium')">Mittel</div>
+          <div class="seg-opt" data-val="hard" onclick="setSeg('botDifficulty','hard')">Schwer</div>
+        </div>
+      </div>
+
+      <div class="setup-section">Chips & Blinds</div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">Startkapital</div></div>
+        <div class="stepper">
+          <button class="step-btn" onclick="stepSetting('startStack',-1000,1000,50000)">−</button>
+          <div class="step-val" id="sv-startStack">5.000</div>
+          <button class="step-btn" onclick="stepSetting('startStack',1000,1000,50000)">+</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">Start Small Blind</div></div>
         <div class="stepper">
           <button class="step-btn" onclick="stepBlind(-1)">−</button>
           <div class="step-val" id="sv-smallBlind">◈ 25</div>
           <button class="step-btn" onclick="stepBlind(1)">+</button>
         </div>
       </div>
-
       <div class="setting-row">
+        <div><div class="setting-lbl">Blind-Erhöhung</div><span class="setting-sub">alle X Hände</span></div>
+        <div class="stepper">
+          <button class="step-btn" onclick="stepSetting('blindRaiseEvery',-1,0,20)">−</button>
+          <div class="step-val" id="sv-blindRaiseEvery">5</div>
+          <button class="step-btn" onclick="stepSetting('blindRaiseEvery',1,0,20)">+</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">Max. Blind</div></div>
+        <div class="stepper">
+          <button class="step-btn" onclick="stepSetting('maxBlind',-100,100,10000)">−</button>
+          <div class="step-val" id="sv-maxBlind">◈ 800</div>
+          <button class="step-btn" onclick="stepSetting('maxBlind',100,100,10000)">+</button>
+        </div>
+      </div>
+
+      <div class="setup-section">Optionen</div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">Timer pro Zug</div></div>
+        <div class="seg" id="seg-timer">
+          <div class="seg-opt" data-val="15" onclick="setSeg('timer',15)">15s</div>
+          <div class="seg-opt sel" data-val="30" onclick="setSeg('timer',30)">30s</div>
+          <div class="seg-opt" data-val="60" onclick="setSeg('timer',60)">60s</div>
+          <div class="seg-opt" data-val="0" onclick="setSeg('timer',0)">∞</div>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">Karten zeigen am Ende</div></div>
+        <div class="toggle on" id="tog-showCards" onclick="toggleSetting('showCards')"></div>
+      </div>
+      <div class="setting-row" style="padding-bottom:4px;">
         <div><div class="setting-lbl">Spieler beigetreten</div></div>
-        <div style="font-size:11px;color:var(--gold);" id="sv-playerCount">1</div>
+        <div style="font-size:12px;color:var(--gold-light);" id="sv-playerCount">1</div>
       </div>
       <div class="players-joined-list" id="setup-player-list"></div>
 
     </div>
     <div class="setup-footer">
-      <button class="btn-start" id="btn-start-game">▶ Spiel Starten</button>
+      <button class="btn-start" id="btn-start-game">▶ Spiel starten</button>
     </div>
   </div>
 
   <!-- Non-master waiting panel -->
-  <div id="setup-wait" style="display:none;height:100%;flex-direction:column;">
+  <div id="setup-wait" style="display:none;height:100%;flex-direction:column;background:radial-gradient(ellipse at 50% 30%,#2a6040 0%,#1a4a2e 40%,#0a1c10 100%);">
     <div class="setup-header">
       <div class="setup-title">♠ Royal Poker</div>
-      <div style="font-size:8px;color:rgba(212,176,106,.5);letter-spacing:1px;">WARTE AUF MASTER</div>
+      <div style="font-size:9px;color:rgba(200,168,75,.5);letter-spacing:1px;">WARTE AUF MASTER...</div>
     </div>
     <div class="wait-start">
       <div class="wait-av" id="my-avatar-display">🎩</div>
-      <div class="wait-name" id="my-name-display">Player</div>
+      <div class="wait-name" id="my-name-display">–</div>
       <div class="pulse-ring"><span class="dot"></span> Master richtet Spiel ein...</div>
+      <div class="players-joined-list" id="setup-wait-list"></div>
+      <div class="wait-info">Warte auf den Master,<br>der das Spiel startet.</div>
     </div>
   </div>
 </div>
 
-<!-- ══════════ GAME SCREEN – 3 VIEWS ══════════ -->
+<!-- ══════════ WAIT TURN ══════════ -->
+<div id="wait-turn" class="screen">
+  <div class="game-topbar">
+    <div class="g-name" id="wt-pname">♠ –</div>
+    <div class="pot-pill" id="wt-pot">◈ 0</div>
+    <div class="g-stack" id="wt-stack">◈ 0</div>
+  </div>
+  <div class="wt-body">
+    <div class="wt-av" id="wt-av">🎩</div>
+    <div class="wt-name" id="wt-name">–</div>
+    <div class="wt-active" id="wt-active"><span class="dot"></span> Warte...</div>
+    <div class="comm-preview" id="wt-comm"></div>
+    <div class="wt-cards">
+      <div class="wt-card"></div>
+      <div class="wt-card"></div>
+    </div>
+    <div class="wt-info" id="wt-phase-lbl">PRE-FLOP</div>
+  </div>
+</div>
+
+<!-- ══════════ GAME (active turn) ══════════ -->
 <div id="game-view" class="screen">
-  
-  <div class="nav">
-    <button class="active" onclick="showView(1)">Hand</button>
-    <button onclick="showView(2)">Peek</button>
-    <button onclick="showView(3)">Table</button>
+  <!-- Topbar: minimal, no slider needed -->
+  <div class="game-topbar">
+    <div class="g-name" id="gv-name">♠ –</div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="pot-pill" id="v1-pot">◈ 0</div>
+      <div class="turn-badge"><span class="dot"></span> Dein Zug</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="g-stack" id="gv-stack">◈ 0</div>
+      <button class="vsw-btn" id="vsw-btn" onclick="cycleView()">👁<div class="vsw-badge" id="vsw-badge">2</div></button>
+    </div>
   </div>
 
   <div class="view-area">
-    <!-- VIEW 1: Hand with big cards -->
-    <div id="view1" class="view active">
-      <div class="card-area">
-        <div class="cards">
-          <div class="card"><div class="card-face front">A♠</div><div class="card-face back"></div></div>
-          <div class="card"><div class="card-face front">K♥</div><div class="card-face back"></div></div>
+
+    <!-- VIEW 1: Big cards left, buttons right -->
+    <div class="view active" id="view-cards">
+      <div class="vl">
+        <div class="cards-area" id="v1-cards"></div>
+        <div class="info-strip">
+          <span>SB ◈<span id="v1-sb">25</span></span>
+          <span style="color:rgba(200,168,75,.2)">│</span>
+          <span>BB ◈<span id="v1-bb">50</span></span>
+        </div>
+      </div>
+      <div class="vr" id="v1-panel">
+        <div class="vbtns" id="v1-btns"></div>
+        <div class="knob-wrap" id="v1-knob-wrap">
+          <div class="knob-lbl">RAISE</div>
+          <canvas class="knob" id="knob1" width="64" height="64"></canvas>
+          <div class="knob-val" id="v1-betval">◈ 0</div>
         </div>
       </div>
     </div>
 
-    <!-- VIEW 2: Peek view (press to reveal) -->
-    <div id="view2" class="view">
-      <div class="peek-area" id="peek-area">
-        <div class="peek-hint">Drücke & halten zum Aufdecken</div>
-        <div class="cards" id="peek-cards">
-          <div class="card flip" id="pk1"><div class="card-face front">A♠</div><div class="card-face back"></div></div>
-          <div class="card flip" id="pk2"><div class="card-face front">K♥</div><div class="card-face back"></div></div>
+    <!-- VIEW 2: Peek cards left, buttons right -->
+    <div class="view" id="view-peek">
+      <div class="vl" id="peek-top">
+        <div class="peek-info">
+          <div class="pot-pill" id="v2-pot">POT ◈ 0</div>
+          <span style="font-size:9px;color:rgba(200,168,75,.4);" id="v2-call">CALL ◈ 0</span>
+        </div>
+        <div class="peek-hint" id="peek-hint">
+          <div class="hint-arrows">
+            <div class="ha"></div><div class="ha"></div><div class="ha"></div>
+          </div>
+          <span>Nach oben wischen</span>
+        </div>
+        <div class="peek-pair">
+          <div class="peek-wrap" id="pw0">
+            <div class="pk-front" id="pf0"></div>
+            <div class="pk-back" id="pb0"></div>
+            <div class="peek-shadow" id="ps0"></div>
+          </div>
+          <div class="peek-wrap" id="pw1">
+            <div class="pk-front" id="pf1"></div>
+            <div class="pk-back" id="pb1"></div>
+            <div class="peek-shadow" id="ps1"></div>
+          </div>
+        </div>
+      </div>
+      <div class="vr" id="v2-panel">
+        <div class="vbtns" id="v2-btns"></div>
+        <div class="knob-wrap" id="v2-knob-wrap">
+          <div class="knob-lbl">RAISE</div>
+          <canvas class="knob" id="knob2" width="64" height="64"></canvas>
+          <div class="knob-val" id="v2-betval">◈ 0</div>
         </div>
       </div>
     </div>
 
-    <!-- VIEW 3: Table overview -->
-    <div id="view3" class="view">
-      <div class="table-area">
-        <div class="table-info">Pot: ◈ 640</div>
-        <div style="opacity:.8;font-size:11px;margin-bottom:10px;">5 Spieler aktiv</div>
-        <div style="padding:10px;background:rgba(0,0,0,.2);border-radius:6px;border:1px solid var(--gold);font-size:10px;">
-          Community: 10♣ J♦ Q♠ 2♣ 7♥
+    <!-- VIEW 3: Table left, buttons right -->
+    <div class="view" id="view-table">
+      <div class="vl table-mini" id="v3-table">
+        <div class="mini-oval"></div>
+        <div class="comm-mini" id="v3-comm"></div>
+        <div class="pot-mini"><div class="pot-pill" id="v3-pot">◈ 0</div></div>
+        <div id="v3-opponents"></div>
+        <div class="own-cards-mini" id="v3-own-cards"></div>
+        <div class="own-info-mini" id="v3-own-info"></div>
+      </div>
+      <div class="vr" id="v3-panel">
+        <div class="vbtns" id="v3-btns"></div>
+        <div class="knob-wrap" id="v3-knob-wrap">
+          <div class="knob-lbl">RAISE</div>
+          <canvas class="knob" id="knob3" width="64" height="64"></canvas>
+          <div class="knob-val" id="v3-betval">◈ 0</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Action buttons grid -->
-  <div class="actions">
-    <button class="fold" id="btn-fold" onclick="doAction('fold')">Fold</button>
-    <button class="check" id="btn-check" onclick="doAction('check')">Check</button>
-    <button class="call" id="btn-call" onclick="doAction('call')">Call</button>
-    <button class="raise" id="btn-raise" onclick="toggleRaise()">Raise</button>
-  </div>
-
-  <!-- Raise panel (overlaid) -->
-  <div class="raise-panel" id="raisePanel">
-    <div style="color:var(--gold);font-weight:600;margin-bottom:8px;font-size:13px;font-family:'Playfair Display',serif;">💰 Raise Amount</div>
-    <div class="raise-slider-container">
-      <input type="range" min="0" max="2000" value="100" step="10" class="raise-slider" id="raiseSlider">
-    </div>
-    <div class="raise-presets">
-      <button class="preset-btn" onclick="setRaiseAmount(100)">100</button>
-      <button class="preset-btn" onclick="setRaiseAmount(200)">200</button>
-      <button class="preset-btn" onclick="setRaiseAmount(500)">500</button>
-      <button class="preset-btn" onclick="setRaiseAmount(1000)">1000</button>
-      <button class="preset-btn" onclick="setRaiseAmount(2000)">All-in</button>
-    </div>
-    <div class="raise-value" id="raiseValue">◈ 100</div>
-    <div class="confirm">
-      <button class="confirm-raise" onclick="confirmRaise()">✓ Confirm</button>
-      <button class="cancel" onclick="toggleRaise()">✕ Cancel</button>
-    </div>
-  </div>
-
-  <!-- Toast notification -->
-  <div class="toast" id="toast"></div>
+  </div><!-- view-area -->
 </div>
 
+<!-- Win overlay -->
+<div class="win-overlay" id="win-overlay">
+  <div class="wo-banner" id="wo-banner">♛ Gewinner ♛</div>
+  <div class="wo-box">
+    <div class="wo-av" id="wo-av">🎩</div>
+    <div class="wo-name" id="wo-name">–</div>
+    <div class="wo-hand" id="wo-hand">–</div>
+    <div class="wo-amt" id="wo-amt">+ ◈ 0</div>
+  </div>
+  <div class="wo-cd" id="wo-cd">Nächste Hand in 5...</div>
+</div>
+
+<!-- Rotate hint (portrait during game) -->
+<div id="rotate-hint">
+  <div class="ri">📱</div>
+  <p>Bitte Handy<br>drehen</p>
+</div>
+
+<!-- Manual fullscreen button (fallback if auto-FS denied) -->
+<button id="fs-phone-btn" onclick="requestFullscreenAndLandscape();this.classList.remove('show');">⛶</button>
+
 <script>
-// ════════════════════════════════════
-// SCREEN MANAGEMENT
-// ════════════════════════════════════
-function showScreen(screenId){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
-}
+let socket = null;
+let myId = null, myAvatar = '🎩', myName = '', isMaster = false;
+let currentView = 1;
+let myCards = [];
+let gameState = null;
+let validActions = [], callAmount = 0, minRaise = 50;
+let currentBet = 0;
+let settings = { startStack:5000,smallBlind:25,bigBlind:50,blindRaiseEvery:5,maxBlind:800,botCount:0,botDifficulty:'medium',timer:30,showCards:true };
+const blindLevels = [5,10,15,25,50,75,100,150,200,300,400,500];
+let blindIdx = 4; // 25
 
-// ════════════════════════════════════
-// VIEW SELECTION (Hand, Peek, Table)
-// ════════════════════════════════════
-function showView(num){
-  document.querySelectorAll('.view-area .view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view'+ num).classList.add('active');
-  document.querySelectorAll('.nav button').forEach((b, i) => {
-    b.classList.toggle('active', i + 1 === num);
-  });
-}
-
-// ════════════════════════════════════
-// RAISE PANEL (from Konzept)
-// ════════════════════════════════════
-const raisePanel = document.getElementById('raisePanel');
-const raiseSlider = document.getElementById('raiseSlider');
-const raiseValue = document.getElementById('raiseValue');
-
-function toggleRaise(){
-  raisePanel.classList.toggle('active');
-  if(raisePanel.classList.contains('active')){
-    updateRaiseDisplay(raiseSlider.value);
-  }
-}
-
-function setRaiseAmount(amount){
-  raiseSlider.value = amount;
-  updateRaiseDisplay(amount);
-}
-
-function updateRaiseDisplay(amount){
-  const max = parseInt(raiseSlider.max);
-  let displayText = amount == max ? '◈ All-in' : '◈ ' + amount;
-  raiseValue.textContent = displayText;
-}
-
-function confirmRaise(){
-  showToast('Raise bestätigt: ' + raiseValue.textContent);
-  toggleRaise();
-}
-
-function doAction(action){
-  if(action === 'call') showToast('Call: ◈ 50');
-  else if(action === 'check') showToast('Check');
-  else if(action === 'fold') showToast('Fold');
-  else if(action === 'raise') toggleRaise();
-}
-
-raiseSlider.addEventListener('input', function(){
-  updateRaiseDisplay(this.value);
+// ── Auto-fill room from URL ───────────────────────────────────────────
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(location.search);
+  const room = params.get('room');
+  if (room) document.getElementById('inp-code').value = room.toUpperCase();
 });
 
-// ════════════════════════════════════
-// PEEK LOGIC (Click & Touch)
-// ════════════════════════════════════
-const peekArea = document.getElementById('peek-area');
-const pk1 = document.getElementById('pk1');
-const pk2 = document.getElementById('pk2');
-let peekTimeout;
+// ── Avatar picker ─────────────────────────────────────────────────────
+document.getElementById('av-grid').addEventListener('click', e => {
+  const opt = e.target.closest('.av-opt');
+  if (!opt) return;
+  document.querySelectorAll('.av-opt').forEach(o => o.classList.remove('sel'));
+  opt.classList.add('sel');
+  myAvatar = opt.dataset.av;
+});
 
-function revealCards(){
-  clearTimeout(peekTimeout);
-  pk1.classList.remove('flip');
-  pk2.classList.remove('flip');
+// ── Join ─────────────────────────────────────────────────────────────
+document.getElementById('btn-join-now').addEventListener('click', doJoin);
+document.getElementById('inp-code').addEventListener('keydown', e => { if(e.key==='Enter') doJoin(); });
+document.getElementById('inp-name').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('inp-code').focus(); });
+
+function doJoin() {
+  const name = document.getElementById('inp-name').value.trim() || 'Spieler';
+  const code = document.getElementById('inp-code').value.trim().toUpperCase();
+  const err  = document.getElementById('join-error');
+  if (!code || code.length < 5) { err.textContent = 'Bitte Raum-Code eingeben'; return; }
+  err.textContent = '';
+  myName = name; myAvatar = document.querySelector('.av-opt.sel')?.dataset.av || '🎩';
+  connectSocket(code, name, myAvatar);
 }
 
-function hideCards(){
-  peekTimeout = setTimeout(() => {
-    pk1.classList.add('flip');
-    pk2.classList.add('flip');
-  }, 1500);
-}
+function connectSocket(code, name, avatar) {
+  socket = io();
 
-peekArea.addEventListener('mousedown', revealCards);
-peekArea.addEventListener('touchstart', (e) => {
-  if(e.target.closest('.cards')) revealCards();
-}, {passive:true});
-
-window.addEventListener('mouseup', hideCards);
-window.addEventListener('touchend', hideCards);
-
-// ════════════════════════════════════
-// TOAST NOTIFICATIONS
-// ════════════════════════════════════
-function showToast(msg){
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-// ════════════════════════════════════
-// SETUP FUNCTIONS
-// ════════════════════════════════════
-function stepSetting(key, step){
-  const field = document.getElementById('sv-'+key);
-  let val = parseInt(field.textContent.replace(/[^\d]/g,'')) || 0;
-  val = Math.max(0, val + step);
-  field.textContent = val;
-}
-
-function stepBlind(dir){
-  const field = document.getElementById('sv-smallBlind');
-  let val = parseInt(field.textContent.replace(/[^\d]/g,'')) || 25;
-  val = Math.max(5, val + dir * 5);
-  field.textContent = '◈ ' + val;
-}
-
-// ════════════════════════════════════
-// INIT
-// ════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  showScreen('join');
-  
-  // Avatar selection
-  document.querySelectorAll('.av-opt').forEach(opt => {
-    opt.addEventListener('click', () => {
-      document.querySelectorAll('.av-opt').forEach(o => o.classList.remove('sel'));
-      opt.classList.add('sel');
-    });
+  socket.on('connect', () => {
+    socket.emit('join-room', { code, name, avatar });
   });
 
-  // Join button
-  document.getElementById('btn-join-now').addEventListener('click', () => {
-    const name = document.getElementById('inp-name').value.trim() || 'Player';
-    const code = document.getElementById('inp-code').value.trim();
-    if(!code || code.length < 5){
-      document.getElementById('join-error').textContent = 'Raum-Code erforderlich';
-      return;
+  socket.on('joined', ({ playerId, isMaster: master }) => {
+    myId = playerId; isMaster = master;
+    if (isMaster) {
+      showSetupMaster();
+    } else {
+      showSetupWait();
     }
-    // Simulate join
-    showScreen('setup');
-    document.getElementById('setup-master').style.display = 'flex';
-    document.getElementById('setup-wait').style.display = 'none';
-    document.getElementById('my-avatar-display').textContent = document.querySelector('.av-opt.sel')?.textContent || '🎩';
+    document.getElementById('my-avatar-display').textContent = avatar;
     document.getElementById('my-name-display').textContent = name;
   });
 
-  // Start button
-  document.getElementById('btn-start-game').addEventListener('click', () => {
-    showScreen('game-view');
-    showView(1);
+  socket.on('master-assigned', () => {
+    isMaster = true;
+    showSetupMaster();
   });
+
+  socket.on('player-joined', ({ player }) => {
+    addPlayerToLists(player);
+  });
+
+  socket.on('error', ({ msg }) => {
+    document.getElementById('join-error').textContent = msg;
+    if (socket) { socket.disconnect(); socket = null; }
+  });
+
+  socket.on('deal-cards', ({ cards }) => {
+    myCards = cards;
+  });
+
+  socket.on('game-state', (state) => {
+    gameState = state;
+    handleStateUpdate(state);
+  });
+
+  socket.on('your-turn', ({ callAmount: ca, validActions: va, minRaise: mr }) => {
+    callAmount = ca; validActions = va; minRaise = mr;
+    currentBet = ca > 0 ? ca : settings.bigBlind;
+    updateActionBars();
+    showScreen('game-view');
+    setView(currentView);
+  });
+
+  socket.on('winner', ({ winners, pot }) => {
+    showWinner(winners[0]);
+  });
+
+  socket.on('blind-raise', ({ small, big }) => {
+    settings.smallBlind = small; settings.bigBlind = big;
+    showToast(`↑ Blinds: ◈${small} / ◈${big}`);
+  });
+
+  socket.on('new-game-started', () => {
+    myCards = []; gameState = null; isMaster = false; myId = null;
+    showScreen('join');
+  });
+}
+
+// ── Setup handlers ───────────────────────────────────────────────────
+function showSetupMaster() {
+  showScreen('setup');
+  document.getElementById('setup-master').style.display = 'flex';
+  document.getElementById('setup-wait').style.display = 'none';
+  renderSettingsUI();
+}
+function showSetupWait() {
+  showScreen('setup');
+  document.getElementById('setup-master').style.display = 'none';
+  document.getElementById('setup-wait').style.display = 'flex';
+}
+
+function addPlayerToLists(player) {
+  ['setup-player-list','setup-wait-list'].forEach(id => {
+    const list = document.getElementById(id);
+    if (!list) return;
+    if (document.getElementById('pj-'+player.id)) return;
+    const el = document.createElement('div');
+    el.className = 'pj-av'; el.id = 'pj-'+player.id;
+    el.textContent = player.avatar;
+    el.title = player.name;
+    list.appendChild(el);
+  });
+  const cnt = document.getElementById('sv-playerCount');
+  if (cnt) cnt.textContent = document.querySelectorAll('#setup-player-list .pj-av').length;
+}
+
+document.getElementById('btn-start-game').addEventListener('click', () => {
+  if (socket) socket.emit('start-game');
 });
 
-</script>
+function renderSettingsUI() {
+  document.getElementById('sv-botCount').textContent = settings.botCount;
+  document.getElementById('sv-startStack').textContent = settings.startStack.toLocaleString('de-DE');
+  document.getElementById('sv-smallBlind').textContent = '◈ ' + settings.smallBlind;
+  document.getElementById('sv-blindRaiseEvery').textContent = settings.blindRaiseEvery || 'nie';
+  document.getElementById('sv-maxBlind').textContent = '◈ ' + settings.maxBlind;
+  setToggle('tog-showCards', settings.showCards);
+}
 
+function stepSetting(key, delta, min=0, max=999999) {
+  settings[key] = Math.min(max, Math.max(min, (settings[key]||0) + delta));
+  renderSettingsUI();
+  pushSettings();
+}
+function stepBlind(dir) {
+  blindIdx = Math.max(0, Math.min(blindLevels.length-1, blindIdx + dir));
+  settings.smallBlind = blindLevels[blindIdx];
+  settings.bigBlind = settings.smallBlind * 2;
+  renderSettingsUI();
+  pushSettings();
+}
+function setSeg(key, val) {
+  settings[key] = val;
+  const segId = key === 'botDifficulty' ? 'seg-diff' : key === 'timer' ? 'seg-timer' : null;
+  if (segId) {
+    document.querySelectorAll('#'+segId+' .seg-opt').forEach(o => {
+      o.classList.toggle('sel', o.dataset.val == val);
+    });
+  }
+  pushSettings();
+}
+function toggleSetting(key) {
+  settings[key] = !settings[key];
+  renderSettingsUI();
+  pushSettings();
+}
+function setToggle(id, val) {
+  const el = document.getElementById(id);
+  if (el) { el.classList.toggle('on', !!val); el.classList.toggle('off', !val); }
+}
+function pushSettings() {
+  if (socket && isMaster) socket.emit('update-settings', { ...settings });
+}
+
+// ── Game state handler ───────────────────────────────────────────────
+function handleStateUpdate(state) {
+  settings = state.settings || settings;
+  const me = state.players.find(p => p.id === myId);
+  if (!me) return;
+
+  // Update waiting views
+  updateWaitTurn(state, me);
+  updateGameViews(state, me);
+
+  // If on setup screen and game started
+  if ((state.phase === 'preflop' || state.phase === 'flop' || state.phase === 'turn' || state.phase === 'river') && !me.isActive) {
+    if (document.getElementById('setup').classList.contains('active') || document.getElementById('join').classList.contains('active')) {
+      showScreen('wait-turn');
+    }
+  }
+  if (state.phase === 'lobby' || state.phase === 'setup') {
+    if (!document.getElementById('setup').classList.contains('active')) {
+      if (isMaster) showSetupMaster(); else showSetupWait();
+    }
+    // Update player count
+    if (isMaster) {
+      document.getElementById('sv-playerCount').textContent = state.players.filter(p=>!p.isBot).length;
+    }
+  }
+
+  // Comm cards preview in wait screen
+  renderWaitComm(state.communityCards);
+}
+
+function updateWaitTurn(state, me) {
+  document.getElementById('wt-av').textContent = me.avatar || '🎩';
+  document.getElementById('wt-name').textContent = me.name;
+  document.getElementById('wt-pname').textContent = '♠ ' + me.name;
+  document.getElementById('wt-pot').textContent = '◈ ' + state.pot;
+  document.getElementById('wt-stack').textContent = '◈ ' + me.stack;
+  document.getElementById('wt-phase-lbl').textContent = phaseLabel(state.phase);
+  const active = state.players.find(p => p.isActive);
+  document.getElementById('wt-active').innerHTML = `<span class="dot"></span> ${active ? active.name + ' ist am Zug' : 'Warte...'}`;
+  document.getElementById('v1-sb').textContent = state.settings.smallBlind;
+  document.getElementById('v1-bb').textContent = state.settings.bigBlind;
+}
+
+function renderWaitComm(cards) {
+  const el = document.getElementById('wt-comm');
+  el.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const d = document.createElement('div');
+    if (cards && cards[i]) {
+      d.className = 'mc'; d.style.fontSize='10px'; d.style.fontFamily="'IM Fell English',serif"; d.style.fontWeight='700';
+      d.style.color = isRed(cards[i]) ? '#8b1a1a' : '#111';
+      d.textContent = rankDisplay(cards[i]) + suitSymbol(cards[i]);
+    } else {
+      d.className = 'mc mc-back';
+    }
+    el.appendChild(d);
+  }
+}
+
+function updateGameViews(state, me) {
+  if (myCards.length < 2) {
+    if (me.cards && me.cards.length === 2 && !me.cards.includes('??')) myCards = me.cards;
+  }
+  // V1 cards
+  renderV1Cards(myCards);
+  // V1 info
+  document.getElementById('gv-name').textContent = '♠ ' + me.name;
+  document.getElementById('gv-stack').textContent = '◈ ' + me.stack;
+  document.getElementById('v1-pot').textContent = 'POT: ◈ ' + state.pot;
+  document.getElementById('v2-pot').textContent = 'POT: ◈ ' + state.pot;
+  document.getElementById('v2-call').textContent = 'CALL: ◈ ' + callAmount;
+  document.getElementById('v3-pot').textContent = '◈ ' + state.pot;
+  // V3
+  renderV3(state, me);
+}
+
+function renderV1Cards(cards) {
+  const el = document.getElementById('v1-cards');
+  el.innerHTML = '';
+  const show = cards && cards.length === 2 && !cards.includes('??');
+  for (let i = 0; i < 2; i++) {
+    const d = document.createElement('div');
+    if (show) {
+      const c = cards[i];
+      d.className = 'hand-card ' + (isRed(c) ? 'red' : 'black');
+      const r = rankDisplay(c), s = suitSymbol(c);
+      d.innerHTML = `<div class="hc-tl">${r}<br>${s}</div><div class="hc-c">${s}</div><div class="hc-br">${r}<br>${s}</div>`;
+    } else {
+      d.className = 'hand-card hidden';
+    }
+    el.appendChild(d);
+    // Peek fronts
+    fillPeekFront(i, show ? cards[i] : null);
+  }
+}
+
+function fillPeekFront(i, code) {
+  const pf = document.getElementById('pf'+i);
+  if (!pf) return;
+  if (code) {
+    const r = rankDisplay(code), s = suitSymbol(code), red = isRed(code);
+    pf.className = 'pk-front' + (red ? ' red' : ' black');
+    pf.style.color = red ? 'var(--red)' : '#111';
+    pf.innerHTML = `<div class="hc-tl" style="color:${red?'var(--red)':'#111'}">${r}<br>${s}</div><div class="hc-c" style="color:${red?'var(--red)':'#111'}">${s}</div><div class="hc-br" style="color:${red?'var(--red)':'#111'}">${r}<br>${s}</div>`;
+  } else {
+    pf.innerHTML = '';
+  }
+}
+
+function renderV3(state, me) {
+  // Community cards
+  const commEl = document.getElementById('v3-comm');
+  commEl.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const d = document.createElement('div');
+    if (state.communityCards[i]) {
+      const c = state.communityCards[i];
+      d.className = 'mini-card';
+      d.innerHTML = `<div class="r" style="color:${isRed(c)?'#8b1a1a':'#111'}">${rankDisplay(c)}${suitSymbol(c)}</div>`;
+    } else {
+      d.className = 'mini-card back';
+    }
+    commEl.appendChild(d);
+  }
+
+  // Own cards — fixed bottom-left so they NEVER overlap community
+  const ownCards = document.getElementById('v3-own-cards');
+  ownCards.innerHTML = '';
+  const show = myCards && myCards.length === 2 && !myCards.includes('??');
+  for (let i = 0; i < 2; i++) {
+    const d = document.createElement('div');
+    if (show) {
+      const c = myCards[i];
+      d.className = 'own-card-mini ' + (isRed(c) ? 'red' : 'black');
+      d.style.transform = i === 0 ? 'rotate(-5deg)' : 'rotate(5deg)';
+      const r = rankDisplay(c), s = suitSymbol(c);
+      d.innerHTML = `<div class="r">${r}<br>${s}</div><div class="c">${s}</div>`;
+    } else {
+      d.className = 'own-card-mini hidden';
+      d.style.transform = i === 0 ? 'rotate(-5deg)' : 'rotate(5deg)';
+    }
+    ownCards.appendChild(d);
+  }
+  document.getElementById('v3-own-info').innerHTML =
+    `<div class="nm">${me.name}</div><div class="stk">◈ ${me.stack}</div>`;
+
+  // Opponents — measure the vl (left panel) which is always in DOM
+  const vl = document.getElementById('v3-table');
+  const W = vl.clientWidth  || (window.innerWidth  - 120);
+  const H = vl.clientHeight || (window.innerHeight - 44);
+
+  const oppContainer = document.getElementById('v3-opponents');
+  oppContainer.innerHTML = '';
+  const opps = state.players.filter(p => p.id !== myId && p.status !== 'out');
+  const n = opps.length;
+  if (n === 0) return;
+
+  // Center of oval — keep in upper 70% so own cards at bottom don't overlap
+  const cx = W * 0.5;
+  const cy = H * 0.42;
+  const rx = W * 0.38;
+  const ry = H * 0.30;
+
+  opps.forEach((p, i) => {
+    const angle = (2 * Math.PI * i / n) - Math.PI / 2;
+    const x = cx + rx * Math.cos(angle);
+    const y = cy + ry * Math.sin(angle);
+    const div = document.createElement('div');
+    div.className = 'opp-seat';
+    div.style.left = x + 'px';
+    div.style.top  = y + 'px';
+    div.innerHTML = `
+      <div class="opp-av ${p.isActive ? 'active' : ''} ${p.status === 'folded' ? 'folded' : ''}">${p.avatar}</div>
+      <div class="opp-nm ${p.isActive ? 'active' : ''}">${p.name}</div>
+      <div class="opp-stk">◈${p.stack}</div>`;
+    oppContainer.appendChild(div);
+  });
+}
+
+// ── Action bars ───────────────────────────────────────────────────────
+function updateActionBars() {
+  const btnDefs = [
+    { cls:'fold',  icon:'✕', lbl:'Fold',   action:'fold'  },
+    { cls:'check', icon:'○', lbl:'Check',  action:'check' },
+    { cls:'call',  icon:'↑', lbl:'Call',   action:'call'  },
+    { cls:'raise', icon:'⬆', lbl:'Raise',  action:'raise' },
+    { cls:'allin', icon:'★', lbl:'All-In', action:'allIn' },
+  ];
+
+  const me = gameState?.players.find(p => p.id === myId);
+  const maxBet = me?.stack || 0;
+  const minBet = Math.max(callAmount, minRaise || settings.bigBlind);
+  currentBet = minBet;
+
+  // Init knobs with new range
+  initKnobs(minBet, maxBet);
+
+  ['v1-btns','v2-btns','v3-btns'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '';
+    btnDefs.forEach(def => {
+      const btn = document.createElement('button');
+      const isCheck = callAmount === 0 && def.action === 'call';
+      const action  = isCheck ? 'check' : def.action;
+      const lbl     = isCheck ? 'Check' : (def.action === 'call' ? `◈${callAmount}` : def.lbl);
+      const enabled = validActions.includes(action) || (isCheck && validActions.includes('check'));
+      btn.className = `abtn ${def.cls}`;
+      btn.disabled  = !enabled;
+      btn.innerHTML = `<span class="a-icon">${def.icon}</span><span class="a-lbl">${lbl}</span>`;
+      btn.addEventListener('click', () => doAction(action));
+      el.appendChild(btn);
+    });
+    // Disable mutually exclusive check/call
+    const checkBtn = el.querySelector('.abtn.check');
+    const callBtn  = el.querySelector('.abtn.call');
+    if (callAmount > 0) { if (checkBtn) checkBtn.disabled = true; }
+    else                { if (callBtn)  callBtn.disabled  = true; }
+  });
+}
+
+function doAction(action) {
+  if (!socket) return;
+  const amount = (action === 'raise') ? currentBet : 0;
+  socket.emit('player-action', { action, amount });
+  showScreen('wait-turn');
+}
+
+// ── Rotary Knob ───────────────────────────────────────────────────────
+// One shared knob state; all three canvases show same value
+let knobMin = 0, knobMax = 1000;
+let knobAngle = 0;          // degrees, -135 to +135
+let knobDragging = false;
+let knobLastY = 0;
+let knobVelocity = 0;       // for momentum / acceleration
+let knobInerTimer = null;
+
+const KNOB_MIN_DEG = -135;
+const KNOB_MAX_DEG =  135;
+const KNOB_IDS = ['knob1','knob2','knob3'];
+const BET_IDS  = ['v1-betval','v2-betval','v3-betval'];
+
+function knobAngleToBet(angle) {
+  const pct = (angle - KNOB_MIN_DEG) / (KNOB_MAX_DEG - KNOB_MIN_DEG);
+  return Math.round(knobMin + pct * (knobMax - knobMin));
+}
+
+function drawKnob(canvasId, angleDeg) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height, cx = W/2, cy = H/2, r = W/2 - 3;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Outer ring gradient
+  const grad = ctx.createRadialGradient(cx-r*.3, cy-r*.3, 0, cx, cy, r);
+  grad.addColorStop(0, '#6b3a1f');
+  grad.addColorStop(1, '#1a0a04');
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Gold border
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = '#9a7830'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Arc track (background)
+  const startA = (KNOB_MIN_DEG - 90) * Math.PI / 180;
+  const endA   = (KNOB_MAX_DEG - 90) * Math.PI / 180;
+  ctx.beginPath(); ctx.arc(cx, cy, r - 6, startA, endA);
+  ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.stroke();
+
+  // Arc track (filled = current value)
+  const curA = (angleDeg - 90) * Math.PI / 180;
+  ctx.beginPath(); ctx.arc(cx, cy, r - 6, startA, curA);
+  ctx.strokeStyle = '#c8a84b'; ctx.lineWidth = 4; ctx.stroke();
+
+  // Notch / pointer
+  const rad = angleDeg * Math.PI / 180;
+  const nx = cx + (r - 10) * Math.sin(rad);
+  const ny = cy - (r - 10) * Math.cos(rad);
+  ctx.beginPath(); ctx.arc(nx, ny, 4, 0, Math.PI*2);
+  const ng = ctx.createRadialGradient(nx, ny, 0, nx, ny, 5);
+  ng.addColorStop(0, '#f0d878'); ng.addColorStop(1, '#9a7830');
+  ctx.fillStyle = ng; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+
+  // Inner highlight
+  ctx.beginPath(); ctx.arc(cx - r*.25, cy - r*.25, r*.2, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fill();
+}
+
+function updateKnobDisplay() {
+  const bet = knobAngleToBet(knobAngle);
+  currentBet = Math.max(knobMin, Math.min(knobMax, bet));
+  const label = '◈ ' + currentBet;
+  BET_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+  KNOB_IDS.forEach(id => drawKnob(id, knobAngle));
+}
+
+function initKnobs(min, max) {
+  knobMin = min; knobMax = max;
+  // Start at min value
+  knobAngle = KNOB_MIN_DEG;
+  currentBet = min;
+  updateKnobDisplay();
+  // Attach listeners once
+  if (!window._knobListenersAttached) {
+    window._knobListenersAttached = true;
+    KNOB_IDS.forEach(id => {
+      const c = document.getElementById(id);
+      if (!c) return;
+      c.addEventListener('touchstart', knobTouchStart, { passive: false });
+      c.addEventListener('mousedown',  knobMouseStart);
+    });
+    document.addEventListener('touchmove', knobTouchMove, { passive: false });
+    document.addEventListener('touchend',  knobEnd);
+    document.addEventListener('mousemove', knobMouseMove);
+    document.addEventListener('mouseup',   knobEnd);
+  }
+}
+
+function knobTouchStart(e) {
+  if (e.touches.length !== 1) return;
+  knobDragging = true; knobVelocity = 0;
+  knobLastY = e.touches[0].clientY;
+  e.preventDefault();
+}
+function knobMouseStart(e) {
+  knobDragging = true; knobVelocity = 0;
+  knobLastY = e.clientY;
+  e.preventDefault();
+}
+function knobTouchMove(e) {
+  if (!knobDragging) return;
+  const dy = knobLastY - e.touches[0].clientY;
+  knobLastY = e.touches[0].clientY;
+  applyKnobDelta(dy);
+  e.preventDefault();
+}
+function knobMouseMove(e) {
+  if (!knobDragging) return;
+  const dy = knobLastY - e.clientY;
+  knobLastY = e.clientY;
+  applyKnobDelta(dy);
+}
+function knobEnd() {
+  if (!knobDragging) return;
+  knobDragging = false;
+  // Momentum: continue spinning with decreasing velocity
+  if (Math.abs(knobVelocity) > 0.3) {
+    const spin = () => {
+      knobVelocity *= 0.92;
+      applyKnobDelta(knobVelocity);
+      if (Math.abs(knobVelocity) > 0.2) knobInerTimer = requestAnimationFrame(spin);
+    };
+    knobInerTimer = requestAnimationFrame(spin);
+  }
+}
+
+function applyKnobDelta(dy) {
+  // Acceleration: faster drag → bigger steps
+  const speed = Math.abs(dy);
+  const step = speed < 2 ? 1 : speed < 5 ? 3 : speed < 10 ? 8 : 20;
+  const delta = dy > 0 ? step : -step;
+  // Map to angle range: full drag from bottom to top = full arc
+  const anglePerPx = (KNOB_MAX_DEG - KNOB_MIN_DEG) / 200;
+  const angleDelta = dy * anglePerPx * (speed < 3 ? 1 : speed < 8 ? 2 : 4);
+  knobAngle = Math.max(KNOB_MIN_DEG, Math.min(KNOB_MAX_DEG, knobAngle + angleDelta));
+  knobVelocity = dy;
+  updateKnobDisplay();
+}
+
+// ── View cycling ──────────────────────────────────────────────────────
+function cycleView() {
+  setView(currentView % 3 + 1);
+}
+function setView(n) {
+  currentView = n;
+  ['view-cards','view-peek','view-table'].forEach((id, i) => {
+    document.getElementById(id)?.classList.toggle('active', i + 1 === n);
+  });
+  const labels = ['1','2','3'];
+  document.getElementById('vsw-badge').textContent = labels[n % 3];
+  if (n === 3 && gameState) {
+    const me = gameState.players.find(p => p.id === myId);
+    if (me) renderV3(gameState, me);
+  }
+  // Redraw knobs when view becomes visible
+  KNOB_IDS.forEach(id => drawKnob(id, knobAngle));
+}
+
+// ── Swipe peek ────────────────────────────────────────────────────────
+let peekY = 0, peekActive = false, peekStart = 0;
+const MAX_LIFT = 130;
+
+function getPeekEl(i) { return { back: document.getElementById('pb'+i), shadow: document.getElementById('ps'+i) }; }
+
+function peekStart_(e) {
+  if (!document.getElementById('view-peek').classList.contains('active')) return;
+  // Don't activate if touch is on the right panel (buttons/knob)
+  const target = e.target || e.srcElement;
+  if (target.closest && target.closest('.vr')) return;
+  peekActive = true;
+  peekStart = (e.touches ? e.touches[0].clientY : e.clientY);
+  document.getElementById('peek-hint').style.opacity = '0';
+  e.preventDefault();
+}
+function peekMove_(e) {
+  if (!peekActive) return;
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  const delta = Math.max(0, peekStart - y);
+  peekY = Math.min(delta, MAX_LIFT);
+  const pct = peekY / MAX_LIFT;
+  for (let i = 0; i < 2; i++) {
+    const { back, shadow } = getPeekEl(i);
+    if (back) back.style.transform = `translateY(${pct * 105}%)`;
+    if (shadow) { shadow.style.transform = `scaleX(${1-pct*.5})`; shadow.style.opacity = String(1-pct*.8); }
+  }
+  const wraps = [document.getElementById('pw0'), document.getElementById('pw1')];
+  wraps.forEach(w => { if (w) w.style.transform = `translateY(-${peekY * 0.6}px)`; });
+  e.preventDefault();
+}
+function peekEnd_(e) {
+  if (!peekActive) return;
+  peekActive = false;
+  const dur = '0.45s cubic-bezier(0.25,1.4,0.5,1)';
+  for (let i = 0; i < 2; i++) {
+    const { back, shadow } = getPeekEl(i);
+    if (back)   { back.style.transition   = dur; back.style.transform   = 'translateY(0)'; setTimeout(() => back.style.transition   = '', 500); }
+    if (shadow) { shadow.style.transition = dur; shadow.style.transform = 'scaleX(1)'; shadow.style.opacity = '1'; setTimeout(() => shadow.style.transition = '', 500); }
+  }
+  [document.getElementById('pw0'), document.getElementById('pw1')].forEach(w => {
+    if (w) { w.style.transition = dur; w.style.transform = 'translateY(0)'; setTimeout(() => w.style.transition = '', 500); }
+  });
+  peekY = 0;
+  setTimeout(() => { const h = document.getElementById('peek-hint'); if (h) h.style.opacity = '1'; }, 700);
+}
+
+const peekTopEl = document.getElementById('peek-top');
+if (peekTopEl) {
+  peekTopEl.addEventListener('touchstart', peekStart_, { passive: false });
+  peekTopEl.addEventListener('mousedown',  peekStart_);
+}
+document.addEventListener('touchmove', e => { if (peekActive) peekMove_(e); }, { passive: false });
+document.addEventListener('touchend',  e => { if (peekActive) peekEnd_(e);  });
+document.addEventListener('mousemove', e => { if (peekActive) peekMove_(e); });
+document.addEventListener('mouseup',   e => { if (peekActive) peekEnd_(e);  });
+
+// ── Winner ────────────────────────────────────────────────────────────
+function showWinner(w) {
+  if (!w) return;
+  document.getElementById('wo-av').textContent   = w.avatar || '🎩';
+  document.getElementById('wo-name').textContent = w.name;
+  document.getElementById('wo-hand').textContent = w.handName || '–';
+  document.getElementById('wo-amt').textContent  = '+ ◈ ' + w.amount;
+  document.getElementById('wo-banner').textContent = '♛ ' + (w.handName || 'Gewinner') + ' ♛';
+  document.getElementById('win-overlay').classList.add('show');
+  let cd = 5;
+  const cdEl = document.getElementById('wo-cd');
+  const t = setInterval(() => {
+    cd--;
+    cdEl.textContent = 'Nächste Hand in ' + cd + '...';
+    if (cd <= 0) { clearInterval(t); document.getElementById('win-overlay').classList.remove('show'); }
+  }, 1000);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+const GAME_SCREENS = new Set(['game-view','wait-turn']);
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+  checkOrientation(GAME_SCREENS.has(id));
+}
+
+function checkOrientation(inGame) {
+  const hint = document.getElementById('rotate-hint');
+  if (!hint) return;
+  const isPortrait = window.innerHeight > window.innerWidth;
+  hint.classList.toggle('show', inGame && isPortrait);
+  // If in game and portrait, also try fullscreen+landscape again
+  if (inGame && isPortrait) requestFullscreenAndLandscape();
+}
+
+window.addEventListener('resize', () => {
+  const activeGame = [...GAME_SCREENS].some(id => document.getElementById(id)?.classList.contains('active'));
+  checkOrientation(activeGame);
+  // Re-render V3 opponents on resize
+  if (currentView === 3 && gameState) {
+    const me = gameState.players.find(p => p.id === myId);
+    if (me) renderV3(gameState, me);
+  }
+});
+
+function showToast(msg) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
+}
+function phaseLabel(p) {
+  return {lobby:'LOBBY',setup:'SETUP',dealing:'AUSTEILEN',preflop:'PRE-FLOP',flop:'FLOP',turn:'TURN',river:'RIVER',showdown:'SHOWDOWN',winner:'GEWINNER',gameover:'SPIEL VORBEI'}[p] || p.toUpperCase();
+}
+function rankDisplay(code) { return {'T':'10','J':'J','Q':'Q','K':'K','A':'A'}[code[0]] || code[0]; }
+function suitSymbol(code)  { return {'s':'♠','h':'♥','d':'♦','c':'♣'}[code[1]] || code[1]; }
+function isRed(code)       { return code[1] === 'h' || code[1] === 'd'; }
+
+// ── FULLSCREEN + LANDSCAPE ────────────────────────────────────────────
+function requestFullscreenAndLandscape() {
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if (fn) fn.call(el).catch(() => {});
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').catch(() => {});
+  }
+}
+
+// Try on first interaction (capture phase fires before any other handler)
+let phoneFs = false;
+function tryPhoneFs() {
+  if (phoneFs) return;
+  phoneFs = true;
+  requestFullscreenAndLandscape();
+}
+document.addEventListener('touchstart', tryPhoneFs, { once: true, capture: true });
+document.addEventListener('click',      tryPhoneFs, { once: true, capture: true });
+document.addEventListener('touchend',   tryPhoneFs, { once: true, capture: true });
+
+// Also show a manual fullscreen tap-zone if FS wasn't granted after 3s
+setTimeout(() => {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    const btn = document.getElementById('fs-phone-btn');
+    if (btn) btn.classList.add('show');
+  }
+}, 3000);
+
+// ── NEW GAME handler registered in connectSocket ──────────────────────
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
 </body>
 </html>
