@@ -379,6 +379,14 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 }
 .opp-nm-sm.active{color:var(--gold-light);}
 .opp-stk-sm{font-size:9px;color:var(--gold);font-family:'Cinzel',serif;}
+.opp-blind{font-size:9px;font-family:'Cinzel',serif;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:4px;vertical-align:middle;}
+.sb-bl{background:#1a3a6a;color:#a0c0ff;}
+.bb-bl{background:#5a1010;color:#ffb0b0;}
+.act-fold{color:#ff7070 !important;}
+.act-check{color:#70dd70 !important;}
+.act-call{color:#70a0ff !important;}
+.act-raise{color:#ffc040 !important;}
+.act-allin{color:#dd70ff !important;}
 .opp-act-sm{
   font-size:7px;color:rgba(200,168,75,.6);letter-spacing:.5px;
   background:rgba(0,0,0,.3);border-radius:3px;padding:1px 4px;
@@ -657,7 +665,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Cinzel',serif;colo
 <!-- ══════════ GAME (active turn) ══════════ -->
 <div id="game-view" class="screen">
   <div class="game-topbar">
-    <div class="g-name" id="gv-name">♠ –</div>
+    <div class="g-name" id="gv-name">♠ –</div><span id="my-blind-badge" style="font-size:10px;font-family:'Cinzel',serif;font-weight:700;padding:1px 5px;border-radius:3px;display:none;margin-left:4px;"></span>
     <div style="display:flex;align-items:center;gap:6px;">
       <div class="pot-pill" id="v1-pot">◈ 0</div>
       <div class="turn-badge"><span class="dot"></span> Dein Zug</div>
@@ -1010,7 +1018,9 @@ function updateWaitTurn(state, me) {
   document.getElementById('wt-stack').textContent = '◈ ' + me.stack;
   document.getElementById('wt-phase-lbl').textContent = phaseLabel(state.phase);
   const active = state.players.find(p => p.isActive);
-  document.getElementById('wt-active').innerHTML = `<span class="dot"></span> ${active ? active.name + ' ist am Zug' : 'Warte...'}`;
+  let activeTxt = 'Warte...';
+  if (active) activeTxt = active.name + (active.isSB ? ' [SB]' : active.isBB ? ' [BB]' : '') + ' ist am Zug';
+  document.getElementById('wt-active').innerHTML = `<span class="dot"></span> ${activeTxt}`;
   document.getElementById('v1-sb').textContent = state.settings.smallBlind;
   document.getElementById('v1-bb').textContent = state.settings.bigBlind;
 }
@@ -1040,6 +1050,19 @@ function updateGameViews(state, me) {
   // V1 info
   document.getElementById('gv-name').textContent = '♠ ' + me.name;
   document.getElementById('gv-stack').textContent = '◈ ' + me.stack;
+  // Show SB/BB badge for own player
+  const myBlindBadge = document.getElementById('my-blind-badge');
+  if (myBlindBadge) {
+    if (me.isSB) {
+      myBlindBadge.textContent = 'SB'; myBlindBadge.style.display = 'inline';
+      myBlindBadge.style.background = '#1a3a6a'; myBlindBadge.style.color = '#a0c0ff';
+    } else if (me.isBB) {
+      myBlindBadge.textContent = 'BB'; myBlindBadge.style.display = 'inline';
+      myBlindBadge.style.background = '#5a1010'; myBlindBadge.style.color = '#ffb0b0';
+    } else {
+      myBlindBadge.style.display = 'none';
+    }
+  }
   document.getElementById('v1-pot').textContent = 'POT: ◈ ' + state.pot;
   document.getElementById('v2-pot').textContent = 'POT: ◈ ' + state.pot;
   document.getElementById('v2-call').textContent = 'CALL: ◈ ' + callAmount;
@@ -1127,24 +1150,39 @@ function renderV3(state, me) {
   const lbl = document.getElementById('v3-own-lbl');
   if (lbl) lbl.textContent = me.name + '  ◈' + me.stack;
 
-  // Opponents list (left column, vertical)
+  // Opponents list — keep FIXED seat order, never re-sort
   const oppContainer = document.getElementById('v3-opponents');
   if (oppContainer) {
     oppContainer.innerHTML = '';
-    const opps = state.players.filter(p => p.id !== myId);
-    opps.forEach(p => {
+    // show all players except me, in their seat-index order
+    state.players.filter(p => p.id !== myId).forEach(p => {
       const row = document.createElement('div');
       row.className = 'opp-row' +
-        (p.isActive ? ' active' : '') +
-        (p.status === 'folded' ? ' folded' : '');
-      const act = p.lastAction
-        ? `<div class="opp-act-sm">${p.lastAction.toUpperCase()}</div>` : '';
+        (p.isActive  ? ' active'  : '') +
+        (p.status === 'folded' || p.status === 'out' ? ' folded' : '');
+
+      // blind badge
+      let blindHtml = '';
+      if (p.isSB) blindHtml = '<span class="opp-blind sb-bl">SB</span>';
+      if (p.isBB) blindHtml = '<span class="opp-blind bb-bl">BB</span>';
+
+      // last action with amount for raise
+      let actHtml = '';
+      if (p.lastAction) {
+        let lbl = p.lastAction;
+        if (lbl === 'RAISE' && p.bet > 0) lbl = `RAISE ◈${p.bet}`;
+        const cls = 'opp-act-sm act-' + p.lastAction.toLowerCase();
+        actHtml = `<span class="${cls}">${lbl}</span>`;
+      }
+
       row.innerHTML = `
         <div class="opp-av-sm">${p.avatar}</div>
         <div class="opp-info-sm">
-          <div class="opp-nm-sm ${p.isActive ? 'active' : ''}">${p.name}</div>
+          <div class="opp-nm-sm ${p.isActive ? 'active' : ''}">
+            ${p.name}${blindHtml}
+          </div>
           <div class="opp-stk-sm">◈${p.stack}</div>
-          ${act}
+          ${actHtml}
         </div>`;
       oppContainer.appendChild(row);
     });

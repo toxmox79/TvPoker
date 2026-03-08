@@ -116,6 +116,15 @@ body{background:repeating-linear-gradient(91deg,transparent,transparent 80px,rgb
 .mini-cards{display:flex;gap:4px;position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);}
 .mc{width:clamp(20px,2.2vw,32px);height:clamp(28px,3vw,44px);border-radius:3px;background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1px solid var(--gold-dark);}
 .mc.revealed{background:var(--cream);border-color:rgba(0,0,0,.2);}
+.blind-badge{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);font-size:clamp(8px,.7vw,11px);font-family:'Cinzel',serif;font-weight:700;letter-spacing:1px;border-radius:4px;padding:1px 5px;z-index:10;}
+.sb-badge{background:#1a4a8a;color:#a0c0ff;border:1px solid #4080cc;}
+.bb-badge{background:#6a1a1a;color:#ffb0b0;border:1px solid #cc4040;}
+.action-badge{font-size:clamp(8px,.75vw,11px);font-family:'Cinzel',serif;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:4px;margin-top:2px;text-align:center;}
+.act-fold{background:rgba(100,40,40,.8);color:#ff9090;}
+.act-check{background:rgba(30,80,30,.8);color:#90ff90;}
+.act-call{background:rgba(30,50,100,.8);color:#90b0ff;}
+.act-raise{background:rgba(120,80,0,.8);color:#ffd060;}
+.act-allin{background:rgba(100,0,100,.8);color:#ff80ff;}
 .bet-chip{position:absolute;font-size:clamp(12px,1.2vw,18px);font-family:'Cinzel',serif;font-weight:700;color:#ffd700;background:rgba(0,0,0,.75);border:2px solid rgba(200,168,75,.5);border-radius:14px;padding:4px 12px;white-space:nowrap;z-index:6;box-shadow:0 2px 8px rgba(0,0,0,.6);}
 
 /* WINNER OVERLAY */
@@ -597,7 +606,8 @@ function renderSeats(state) {
   var W = area.clientWidth, H = area.clientHeight;
   container.innerHTML = '';
 
-  var players = state.players.filter(function(p){ return p.status !== 'out'; });
+  // Use ALL players in their fixed seat order (never filter/re-sort)
+  var players = state.players;
   var n = players.length;
 
   players.forEach(function(p, i) {
@@ -611,6 +621,7 @@ function renderSeats(state) {
     seat.style.left = x + 'px';
     seat.style.top  = y + 'px';
     seat.style.transform = 'translate(-50%,-50%)';
+    if (p.status === 'out') seat.style.opacity = '0.25';
 
     var avCls = 'av' + (p.isActive ? ' active' : '') + (p.status === 'folded' ? ' folded' : '');
     var mini = '';
@@ -620,16 +631,31 @@ function renderSeats(state) {
       mini = '<div class="mc"></div><div class="mc"></div>';
     }
 
+    // SB / BB badge
+    var blindBadge = '';
+    if (p.isSB) blindBadge = '<div class="blind-badge sb-badge">SB</div>';
+    if (p.isBB) blindBadge = '<div class="blind-badge bb-badge">BB</div>';
+
+    // Last action label
+    var actionLbl = '';
+    if (p.lastAction) {
+      var lbl = p.lastAction;
+      if (lbl === 'RAISE' && p.bet > 0) lbl = 'RAISE ◈' + p.bet;
+      actionLbl = '<div class="action-badge act-' + p.lastAction.toLowerCase() + '">' + lbl + '</div>';
+    }
+
     seat.innerHTML =
       '<div class="' + avCls + '">' +
         p.avatar +
         (p.isDealer ? '<div class="d-btn">D</div>' : '') +
+        blindBadge +
         '<div class="mini-cards">' + mini + '</div>' +
       '</div>' +
       '<div class="name-plate' + (p.isActive ? ' active' : '') + '">' +
         '<div class="nm">' + p.name + (p.isMaster ? ' &#9881;' : '') + '</div>' +
         '<div class="stk">&#9672; ' + p.stack + '</div>' +
         (p.handName ? '<div class="hn">' + p.handName + '</div>' : '') +
+        actionLbl +
       '</div>';
     container.appendChild(seat);
 
