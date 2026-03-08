@@ -611,7 +611,9 @@ function renderSeats(state) {
   var n = players.length;
 
   players.forEach(function(p, i) {
-    var a = (2 * Math.PI * i) / n;
+    // Negatives Vorzeichen: höhere Indizes gehen nach LINKS = Uhrzeigersinn
+    // Seat 0 = oben, Seat 1 = links oben, Seat 2 = links unten, ...
+    var a = -(2 * Math.PI * i) / n;
     var rx = W * 0.34, ry = H * 0.40, cx = W / 2, cy = H / 2;
     var x = cx + rx * Math.sin(a);
     var y = cy - ry * Math.cos(a);
