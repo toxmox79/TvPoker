@@ -562,8 +562,8 @@ function renderGame(state) {
   document.getElementById('t-sb').textContent = state.settings.smallBlind;
   document.getElementById('t-bb').textContent = state.settings.bigBlind;
   document.getElementById('t-pot').textContent = state.pot;
-  document.getElementById('t-hand').textContent = '#' + state.handNumber;
-  document.getElementById('t-hand2').textContent = '#' + state.handNumber;
+  document.getElementById('t-hand').textContent = '#' + state.handNum;
+  document.getElementById('t-hand2').textContent = '#' + state.handNum;
   document.getElementById('t-phase').textContent = phaseLabel(phase);
   document.getElementById('t-phase2').textContent = phaseLabel(phase);
   document.getElementById('pot-display').textContent = state.pot;

@@ -215,7 +215,7 @@ function pubState(room, forId) {
       isMaster:p.isMaster, isBot:p.isBot,
       isActive:i===actSeat,
       lastAction:p.lastAction,
-      handName:reveal?p.handName:null,
+      handName:reveal?(p.handName||''):'',
       cards:(p.id===forId||reveal)?p.cards:(p.cards.length?['??','??']:[]),
     })),
   };
@@ -272,8 +272,26 @@ function startHand(room) {
   let d=room.dealerSeat<0?n-1:room.dealerSeat;
   for (let i=1;i<=n;i++){const s=(d+i)%n;if(room.players[s].status==='active'){room.dealerSeat=s;break;}}
 
-  const sbSeat=nextAfter(room,room.dealerSeat);
-  const bbSeat=nextAfter(room,sbSeat);
+  // ── Blind assignment ──────────────────────────────────────────────
+  // Texas Hold'em rule: SB = first active left of dealer
+  //                     BB = first active left of SB
+  // Heads-Up (2 players): dealer = SB (acts FIRST pre-flop), BB = other player
+  const activePlayers = room.players.filter(p=>p.status==='active');
+  const headsUp = activePlayers.length === 2;
+
+  let sbSeat, bbSeat, firstToAct;
+  if (headsUp) {
+    // Heads-Up: dealer IS the SB and acts first pre-flop
+    sbSeat = room.dealerSeat;
+    bbSeat = nextAfter(room, sbSeat);
+    firstToAct = sbSeat; // dealer/SB acts first pre-flop in heads-up
+  } else {
+    // Normal: SB left of dealer, BB left of SB, UTG left of BB
+    sbSeat = nextAfter(room, room.dealerSeat);
+    bbSeat = nextAfter(room, sbSeat);
+    firstToAct = nextAfter(room, bbSeat);
+  }
+
   room.players[sbSeat].isSB=true;
   room.players[bbSeat].isBB=true;
 
@@ -287,15 +305,12 @@ function startHand(room) {
     if (!p.isBot&&p.socketId&&p.cards.length)
       io.to(p.socketId).emit('deal-cards',{cards:p.cards});
 
-  // Pre-flop BettingRound:
-  //   firstToAct = UTG (seat after BB)
-  //   biggestBet = bigBlind (already posted)
-  //   _lastAggressor = firstToAct  → round runs all the way to firstToAct again,
-  //   giving BB his option (BB is the seat just before firstToAct, so when the
-  //   pointer wraps back to firstToAct, BB has already had his turn)
+  // Pre-flop BettingRound (poker-ts pattern):
+  //   firstToAct + _lastAggressor = firstToAct
+  //   → round goes all the way around, BB always gets his option
+  //   In heads-up: SB/dealer acts first, BB gets option last
   const activeArr=room.players.map(p=>p.status==='active');
-  const firstToAct=nextAfter(room,bbSeat);
-  const bbAmt=room.players[bbSeat].bet; // actual amount posted (may be less if short-stacked)
+  const bbAmt=room.players[bbSeat].bet;
   room.bettingRound=new BettingRound(activeArr,firstToAct,bbAmt,room.settings.bigBlind);
 
   broadcast(room);
@@ -454,10 +469,15 @@ function endStreet(room) {
   if (room.phase==='flop') room.community.push(room.deck.pop(),room.deck.pop(),room.deck.pop());
   else room.community.push(room.deck.pop());
 
+  // Clear last actions for new street
+  for (const p of room.players) p.lastAction=null;
+
   broadcast(room);
 
   if (room.players.filter(p=>p.status==='active').length===0){showdown(room);return;}
 
+  // Post-flop: first to act = first active player LEFT of dealer (clockwise)
+  // This is the SB if still in hand, or next active after dealer
   const activeArr=room.players.map(p=>p.status==='active');
   const first=nextAfter(room,room.dealerSeat);
   room.bettingRound=new BettingRound(activeArr,first,0,room.settings.bigBlind);
