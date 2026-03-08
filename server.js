@@ -81,11 +81,22 @@ function score5(cards) {
   for (const r of ranks) freq[r] = (freq[r]||0)+1;
   const counts = Object.values(freq).sort((a,b)=>b-a);
   const uniq = [...new Set(ranks)].sort((a,b)=>b-a);
-  let straight = uniq.length===5 && ranks[0]-ranks[4]===4;
-  if (!straight && ranks.join()===('12,3,2,1,0')) straight=true;  // wheel A-2-3-4-5
+  
+  // Straight: 5 unique ranks with exactly 4 pips difference
+  let straight = uniq.length===5 && uniq[0]-uniq[4]===4;
+  // Wheel (A-2-3-4-5): Ace is rank 12, 2-5 are ranks 1-4
+  const wheelRanks = [12, 4, 3, 2, 1];
+  let isWheel = !straight && uniq.length===5 && uniq.every((r,i)=>r===wheelRanks[i]);
+  
+  // For wheel, ranks are adjusted to [4,3,2,1,0] for proper comparison
+  let wheelStraightRanks = null;
+  if (isWheel) {
+    straight = true;
+    wheelStraightRanks = [4,3,2,1,0];
+  }
 
   let hr;
-  if      (straight&&flush) hr = ranks[0]===12 ? 9 : 8;
+  if      (straight&&flush) hr = isWheel ? 8 : 9;  // Wheel straight flush is lower than RF
   else if (counts[0]===4)   hr = 7;
   else if (counts[0]===3&&counts[1]===2) hr = 6;
   else if (flush)           hr = 5;
@@ -95,8 +106,34 @@ function score5(cards) {
   else if (counts[0]===2)   hr = 1;
   else                      hr = 0;
 
-  const byFreq = Object.entries(freq).sort((a,b)=>b[1]-a[1]||b[0]-a[0]).map(e=>+e[0]);
-  return [hr, ...byFreq];
+  // Proper tiebreaker order based on hand type
+  let tiebreakers = [];
+  
+  if (hr === 6) {
+    // Full House: Three of a kind first, then Pair
+    const three = Object.entries(freq).find(e=>+e[1]===3);
+    const pair = Object.entries(freq).find(e=>+e[1]===2);
+    tiebreakers = [+three[0], +pair[0]];
+  } else if (hr === 2) {
+    // Two Pair: Higher pair, lower pair, then kicker
+    const pairs = Object.entries(freq).filter(e=>+e[1]===2).map(e=>+e[0]).sort((a,b)=>b-a);
+    const kicker = Object.entries(freq).find(e=>+e[1]===1);
+    tiebreakers = [...pairs, kicker ? +kicker[0] : 0];
+  } else if (hr === 1) {
+    // One Pair: Pair, then kickers in order
+    const pair = Object.entries(freq).find(e=>+e[1]===2);
+    const kickers = Object.entries(freq).filter(e=>+e[1]===1).map(e=>+e[0]).sort((a,b)=>b-a);
+    tiebreakers = [+pair[0], ...kickers];
+  } else if (hr === 0) {
+    // High Card: All cards in descending order
+    tiebreakers = isWheel ? [4,3,2,1,0] : ranks;
+  } else {
+    // For other hands (flush, straight, trips, quads), use frequencies
+    const byFreq = Object.entries(freq).sort((a,b)=>b[1]-a[1]||b[0]-a[0]).map(e=>+e[0]);
+    tiebreakers = isWheel && straight ? wheelStraightRanks : byFreq;
+  }
+
+  return [hr, ...tiebreakers];
 }
 
 function cmp(a,b) {
@@ -117,6 +154,8 @@ function newRoom() {
     players: [],        // fixed seats, never re-sorted
     deck: [], community: [],
     pot: 0,
+    pots: [],           // side pots tracking: [{amount, eligibleSeats: Set}]
+    playerContributions: {},  // track each player's total bet amount {'playerId': totalBet}
     // --- betting state ---
     dealerSeat:   -1,   // index into players[]
     actionSeat:   -1,   // who acts now
@@ -135,6 +174,44 @@ function newRoom() {
     tvSocketId: null,
   };
   return code;
+}
+
+// ─── Pot Management ───────────────────────────────────────────────────
+// Creates side pots based on all-in amounts. Each pot has an eligibility list.
+function createSidePots(room) {
+  const pots = [];
+  const allInAmounts = [];
+  
+  // Collect all unique all-in amounts, sorted ascending
+  for (const p of room.players) {
+    if (room.playerContributions[p.id] && room.playerContributions[p.id] > 0) {
+      if (!allInAmounts.includes(room.playerContributions[p.id])) {
+        allInAmounts.push(room.playerContributions[p.id]);
+      }
+    }
+  }
+  allInAmounts.sort((a,b)=>a-b);
+  
+  // Create pots for each level
+  let prevLevel = 0;
+  for (const level of allInAmounts) {
+    const potAmount = (level - prevLevel) * room.players.length;
+    if (potAmount > 0) {
+      // Eligible players are those who contributed at least this much
+      const eligible = new Set();
+      for (const p of room.players) {
+        if ((room.playerContributions[p.id] || 0) >= level) {
+          eligible.add(p.id);
+        }
+      }
+      if (eligible.size > 0) {
+        pots.push({ amount: potAmount, eligible });
+      }
+    }
+    prevLevel = level;
+  }
+  
+  return pots.length > 0 ? pots : [{ amount: room.pot, eligible: new Set(room.players.map(p=>p.id)) }];
 }
 
 // ─── Seat helpers ─────────────────────────────────────────────────────
@@ -235,6 +312,8 @@ function startHand(room) {
   room.deck      = makeDeck();
   room.community = [];
   room.pot       = 0;
+  room.pots      = [];
+  room.playerContributions = {};
   room.highestBet = 0;
   room.lastRaise  = room.settings.bigBlind;
   room.actionSeat = -1;
@@ -245,6 +324,7 @@ function startHand(room) {
     p.bet=0; p.cards=[]; p.isSB=false; p.isBB=false;
     p.handName=''; p.lastAction=null;
     p.status = p.stack>0 ? 'active' : 'out';
+    room.playerContributions[p.id] = 0;
   }
 
   // Advance dealer
@@ -289,6 +369,7 @@ function postBlind(room, seat, amount) {
   p.stack     -= amount;
   p.bet       += amount;
   room.pot    += amount;
+  room.playerContributions[p.id] = (room.playerContributions[p.id] || 0) + amount;
   room.highestBet = Math.max(room.highestBet, p.bet);
   if (p.stack===0) p.status='allIn';
 }
@@ -372,6 +453,7 @@ function applyAction(room, playerId, action, amount) {
       player.stack -= ca;
       player.bet   += ca;
       room.pot     += ca;
+      room.playerContributions[player.id] = (room.playerContributions[player.id] || 0) + ca;
       if (player.stack === 0) player.status = 'allIn';
       break;
     }
@@ -393,6 +475,7 @@ function applyAction(room, playerId, action, amount) {
       player.stack -= toAdd;
       player.bet   += toAdd;
       room.pot     += toAdd;
+      room.playerContributions[player.id] = (room.playerContributions[player.id] || 0) + toAdd;
       if (player.stack === 0) player.status = 'allIn';
       break;
     }
@@ -407,6 +490,7 @@ function applyAction(room, playerId, action, amount) {
       }
       player.bet   += toAdd;
       room.pot     += toAdd;
+      room.playerContributions[player.id] = (room.playerContributions[player.id] || 0) + toAdd;
       player.stack  = 0;
       player.status = 'allIn';
       break;
@@ -537,20 +621,59 @@ function showdown(room) {
 
   broadcast(room);
 
-  // Find winners
-  let best = null;
-  for (const p of contenders) {
-    if (!p._score) continue;
-    if (!best || cmp(p._score, best) > 0) best = p._score;
-  }
-  const winners = contenders.filter(p => p._score && cmp(p._score, best)===0);
+  // Create pots based on all-in amounts
+  const pots = createSidePots(room);
+  const winnersByPot = [];
 
-  // Award pot
-  const share = winners.length ? Math.floor(room.pot / winners.length) : 0;
-  for (const w of winners) w.stack += share;
+  // Award each pot to eligible winners
+  const potWinnings = {};
+  for (const p of room.players) potWinnings[p.id] = 0;
+
+  for (const pot of pots) {
+    // Find best hand among eligible contenders
+    let best = null;
+    const potContenders = contenders.filter(p => pot.eligible.has(p.id));
+    
+    for (const p of potContenders) {
+      if (!p._score) continue;
+      if (!best || cmp(p._score, best) > 0) best = p._score;
+    }
+    
+    if (best) {
+      const potWinners = potContenders.filter(p => p._score && cmp(p._score, best)===0);
+      
+      // Distribute pot with proper remainder
+      const baseShare = Math.floor(pot.amount / potWinners.length);
+      const remainder = pot.amount % potWinners.length;
+      
+      for (let i = 0; i < potWinners.length; i++) {
+        const share = baseShare + (i < remainder ? 1 : 0);
+        potWinnings[potWinners[i].id] += share;
+      }
+      
+      winnersByPot.push({
+        pot: pot.amount,
+        winners: potWinners.map((w, i) => {
+          const share = baseShare + (i < remainder ? 1 : 0);
+          return { id:w.id, name:w.name, avatar:w.avatar, handName:w.handName, amount:share };
+        })
+      });
+    }
+  }
+
+  // Award winnings to players
+  for (const p of room.players) {
+    if (potWinnings[p.id]) p.stack += potWinnings[p.id];
+  }
+
+  // Flatten winner list for emission
+  const allWinners = [];
+  for (const pwp of winnersByPot) {
+    allWinners.push(...pwp.winners);
+  }
 
   io.to(room.code).emit('winner', {
-    winners: winners.map(w=>({ id:w.id, name:w.name, avatar:w.avatar, handName:w.handName, amount:share })),
+    winners: allWinners,
     pot: room.pot,
   });
 
@@ -567,7 +690,7 @@ function closeHand(room) {
   if (last) {
     last.stack += room.pot;
     io.to(room.code).emit('winner', {
-      winners:[{ id:last.id, name:last.name, avatar:last.avatar, handName:'', amount:room.pot }],
+      winners:[{ id:last.id, name:last.name, avatar:last.avatar, handName:'(everyone folded)', amount:room.pot }],
       pot: room.pot,
     });
   }
@@ -790,10 +913,10 @@ io.on('connection', socket => {
     if (!isTv && !p?.isMaster) return;
     clearTimer(room);
     Object.assign(room, {
-      phase:'lobby', players:[], community:[], pot:0,
+      phase:'lobby', players:[], community:[], pot:0, pots:[],
       actionSeat:-1, dealerSeat:-1, lastToAct:-1,
       deck:[], handNum:0, highestBet:0,
-      lastRaise:room.settings.bigBlind, handsSinceBlind:0,
+      lastRaise:room.settings.bigBlind, handsSinceBlind:0, playerContributions:{},
     });
     io.to(code).emit('new-game-started');
     broadcast(room);
