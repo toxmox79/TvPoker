@@ -503,7 +503,7 @@ socket.on('game-state', function(state) {
   gameState = state;
   tryStartMusicAuto();
   // Community card flip sound
-  var newCount = (state.communityCards || []).filter(Boolean).length;
+  var newCount = (state.community || []).filter(Boolean).length;
   if (lastCommCount >= 0 && newCount > lastCommCount) {
     for (var i = lastCommCount; i < newCount; i++) {
       (function(j){ setTimeout(function(){ tvSounds.flip(); }, j * 110); })(i - lastCommCount);
@@ -569,7 +569,7 @@ function renderGame(state) {
   oval.style.width  = (area.clientWidth  * 0.58) + 'px';
   oval.style.height = (area.clientHeight * 0.65) + 'px';
 
-  renderCommunity(state.communityCards || []);
+  renderCommunity(state.community || []);
   renderSeats(state);
 }
 

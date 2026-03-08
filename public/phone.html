@@ -859,7 +859,7 @@ function connectSocket(code, name, avatar) {
   socket.on('game-state', (state) => {
     gameState = state;
     // Community-Karten-Sound
-    const newCount = (state.communityCards || []).filter(Boolean).length;
+    const newCount = (state.community || []).filter(Boolean).length;
     if (window._lastCommCount !== undefined && newCount > window._lastCommCount) {
       sounds.flip();
     }
@@ -872,7 +872,7 @@ function connectSocket(code, name, avatar) {
     currentBet = ca > 0 ? ca : settings.bigBlind;
     sounds.yourTurn();
     startMusic();
-    updateActionBars();
+    updateActionBars(true);
     showScreen('game-view');
     setView(currentView);
   });
@@ -976,28 +976,30 @@ function handleStateUpdate(state) {
   const me = state.players.find(p => p.id === myId);
   if (!me) return;
 
-  // Update waiting views
-  updateWaitTurn(state, me);
   updateGameViews(state, me);
 
-  // If on setup screen and game started
-  if ((state.phase === 'preflop' || state.phase === 'flop' || state.phase === 'turn' || state.phase === 'river') && !me.isActive) {
-    if (document.getElementById('setup').classList.contains('active') || document.getElementById('join').classList.contains('active')) {
-      showScreen('wait-turn');
-    }
-  }
+  const inPlay = ['preflop','flop','turn','river','showdown','winner','dealing'].includes(state.phase);
+
   if (state.phase === 'lobby' || state.phase === 'setup') {
     if (!document.getElementById('setup').classList.contains('active')) {
       if (isMaster) showSetupMaster(); else showSetupWait();
     }
-    // Update player count
     if (isMaster) {
       document.getElementById('sv-playerCount').textContent = state.players.filter(p=>!p.isBot).length;
     }
+    return;
   }
 
-  // Comm cards preview in wait screen
-  renderWaitComm(state.communityCards);
+  if (inPlay) {
+    const currentScreen = document.querySelector('.screen.active');
+    const sid = currentScreen ? currentScreen.id : '';
+    if (sid === 'setup' || sid === 'join' || sid === 'wait-turn') {
+      showScreen('game-view');
+      setView(currentView);
+    }
+    // Buttons: enabled only when it's my turn, otherwise greyed
+    updateActionBars(me.isActive);
+  }
 }
 
 function updateWaitTurn(state, me) {
@@ -1092,8 +1094,8 @@ function renderV3(state, me) {
     commEl.innerHTML = '';
     for (let i = 0; i < 5; i++) {
       const d = document.createElement('div');
-      if (state.communityCards[i]) {
-        const c = state.communityCards[i];
+      if (state.community[i]) {
+        const c = state.community[i];
         d.className = 'v3-card ' + (isRed(c) ? 'red' : 'black');
         d.innerHTML = `<div class="vr2">${rankDisplay(c)}<br>${suitSymbol(c)}</div><div class="vc">${suitSymbol(c)}</div>`;
       } else {
@@ -1150,7 +1152,8 @@ function renderV3(state, me) {
 }
 
 // ── Action bars ───────────────────────────────────────────────────────
-function updateActionBars() {
+// isMyTurn: wenn false → alle Buttons ausgegraut (sichtbar aber nicht klickbar)
+function updateActionBars(isMyTurn) {
   const btnDefs = [
     { cls:'fold',  icon:'✕', lbl:'Fold',   action:'fold'  },
     { cls:'check', icon:'○', lbl:'Check',  action:'check' },
@@ -1164,7 +1167,6 @@ function updateActionBars() {
   const minBet = Math.max(callAmount, minRaise || settings.bigBlind);
   currentBet = minBet;
 
-  // Init raise panel
   rpInit(minBet, maxBet);
 
   ['v1-btns','v2-btns','v3-btns'].forEach(id => {
@@ -1176,27 +1178,31 @@ function updateActionBars() {
       const isCheck = callAmount === 0 && def.action === 'call';
       const action  = isCheck ? 'check' : def.action;
       const lbl     = isCheck ? 'Check' : (def.action === 'call' ? `◈${callAmount}` : def.lbl);
-      const enabled = validActions.includes(action) || (isCheck && validActions.includes('check'));
+      // When not my turn: all buttons disabled. When my turn: only valid ones enabled.
+      const enabled = isMyTurn && (validActions.includes(action) || (isCheck && validActions.includes('check')));
       btn.className = `abtn ${def.cls}`;
       btn.disabled  = !enabled;
       btn.innerHTML = `<span class="a-icon">${def.icon}</span><span class="a-lbl">${lbl}</span>`;
       btn.addEventListener('click', () => {
+        if (!isMyTurn) return;
         if (action === 'raise') rpOpen();
         else doAction(action);
       });
       el.appendChild(btn);
     });
-    const checkBtn = el.querySelector('.abtn.check');
-    const callBtn  = el.querySelector('.abtn.call');
-    if (callAmount > 0) { if (checkBtn) checkBtn.disabled = true; }
-    else                { if (callBtn)  callBtn.disabled  = true; }
+    if (isMyTurn) {
+      const checkBtn = el.querySelector('.abtn.check');
+      const callBtn  = el.querySelector('.abtn.call');
+      if (callAmount > 0) { if (checkBtn) checkBtn.disabled = true; }
+      else                { if (callBtn)  callBtn.disabled  = true; }
+    }
   });
 }
 
 function doAction(action, amount) {
   if (!socket) return;
   socket.emit('player-action', { action, amount: amount || 0 });
-  showScreen('wait-turn');
+  updateActionBars(false); // grey out until next your-turn
 }
 
 // ── Raise Panel ───────────────────────────────────────────────────────
@@ -1659,10 +1665,10 @@ function attachAudioHooks() {
   socket.on('game-state', (state) => {
     // Karte umdrehen wenn neue Community-Karten erscheinen
     if (window._lastCommCount !== undefined) {
-      const newCount = (state.communityCards || []).filter(Boolean).length;
+      const newCount = (state.community || []).filter(Boolean).length;
       if (newCount > window._lastCommCount) sounds.flip();
     }
-    window._lastCommCount = (state.communityCards || []).filter(Boolean).length;
+    window._lastCommCount = (state.community || []).filter(Boolean).length;
   });
   socket.on('winner', () => { sounds.win(); });
   socket.on('cards-dealt', () => { sounds.deal(); });
