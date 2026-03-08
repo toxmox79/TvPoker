@@ -248,7 +248,7 @@ function scheduleAction(room){
   if(player.isBot){
     setTimeout(()=>{
       if(room.actionSeat>=0&&room.players[room.actionSeat]?.id===player.id)botAct(room,player);
-    },800+Math.random()*1200);
+    },1000+Math.random()*1500);
     return;
   }
 
