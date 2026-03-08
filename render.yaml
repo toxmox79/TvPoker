@@ -1,9 +1,11 @@
-services:
-  - type: web
-    name: royal-poker
-    runtime: node
-    buildCommand: npm install
-    startCommand: node server.js
-    envVars:
-      - key: PORT
-        value: 10000
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "node server.js",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
