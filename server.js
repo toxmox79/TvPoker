@@ -1,97 +1,855 @@
-# ♠ Royal Poker PWA
+'use strict';
+const http = require('http');
+const path = require('path');
+const fs   = require('fs');
 
-Texas Hold'em Poker für den Heimabend – TV + Smartphones, weltweit spielbar.
+// ─── HTTP ─────────────────────────────────────────────────────────────────────
+const MIME = {
+  '.html':'text/html; charset=utf-8', '.css':'text/css',
+  '.js':'application/javascript',     '.json':'application/json',
+  '.png':'image/png',                 '.ico':'image/x-icon',
+  '.webmanifest':'application/manifest+json'
+};
+const PUBLIC_DIR = path.resolve(__dirname, 'public');
+try { console.log('Files:', fs.readdirSync(PUBLIC_DIR).join(', ')); } catch(e) {}
 
----
+const httpServer = http.createServer((req, res) => {
+  let p = req.url.split('?')[0];
+  if (p === '/config') {
+    const host  = (req.headers['x-forwarded-host']||req.headers.host||'localhost').split(',')[0].trim();
+    const proto = (req.headers['x-forwarded-proto']||'http').split(',')[0].trim();
+    res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-cache'});
+    res.end(JSON.stringify({baseUrl: proto+'://'+host})); return;
+  }
+  if (p==='/'||p==='/tv') p='/tv.html';
+  if (p==='/phone')       p='/phone.html';
+  const safe = path.join(PUBLIC_DIR, path.normalize(p).replace(/^(\.\.[\/\\])+/,''));
+  if (!safe.startsWith(PUBLIC_DIR)) { res.writeHead(403); res.end('Forbidden'); return; }
+  fs.readFile(safe, (err,data) => {
+    if (err) { res.writeHead(404); res.end('Not found'); return; }
+    res.writeHead(200,{'Content-Type':MIME[path.extname(safe).toLowerCase()]||'application/octet-stream'});
+    res.end(data);
+  });
+});
 
-## 🚀 Online deployen (kostenlos, empfohlen)
+const { Server } = require('socket.io');
+const io = new Server(httpServer, {
+  cors:{origin:'*'}, transports:['websocket','polling'], allowEIO3:true
+});
 
-### Option A: Railway  ← einfachste Option
+// ─── Utilities ────────────────────────────────────────────────────────────────
+function randCode() {
+  const L='ABCDEFGHJKLMNPQRSTUVWXYZ', N='23456789';
+  return [0,1,2].map(()=>L[Math.random()*L.length|0]).join('')+'-'+
+         [0,1,2].map(()=>N[Math.random()*N.length|0]).join('');
+}
+function shuffle(a) {
+  for (let i=a.length-1;i>0;i--) { const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function makeDeck() {
+  const d=[];
+  for (const s of 'shdc') for (const r of '23456789TJQKA') d.push(r+s);
+  return shuffle(d);
+}
 
-1. Gehe auf [railway.app](https://railway.app) und melde dich mit GitHub an
-2. Klicke **"New Project" → "Deploy from GitHub repo"**
-3. Wähle dieses Repository aus
-4. Railway erkennt Node.js automatisch und deployt
-5. Klicke nach dem Deploy auf **"Settings" → "Networking" → "Generate Domain"**
-6. Du bekommst eine URL wie `https://royal-poker-production.up.railway.app`
-7. Diese URL im TV-Browser öffnen → QR-Code erscheint → fertig!
+// ─── Hand Evaluator ───────────────────────────────────────────────────────────
+const HAND_NAMES=['High Card','One Pair','Two Pair','Three of a Kind',
+                  'Straight','Flush','Full House','Four of a Kind',
+                  'Straight Flush','Royal Flush'];
+function cRank(c){ return '23456789TJQKA'.indexOf(c[0]); }
 
-### Option B: Render
+function evaluate(cards) {
+  let best=null;
+  function pick(i,chosen){
+    if(chosen.length===5){const s=score5(chosen);if(!best||scoreCmp(s,best)>0)best=s;return;}
+    for(let j=i;j<=cards.length-(5-chosen.length);j++){chosen.push(cards[j]);pick(j+1,chosen);chosen.pop();}
+  }
+  if(cards.length<=5) best=score5(cards); else pick(0,[]);
+  return best;
+}
+function score5(cards){
+  const ranks=cards.map(cRank).sort((a,b)=>b-a);
+  const suits=cards.map(c=>c[1]);
+  const flush=suits.every(s=>s===suits[0]);
+  const freq={};for(const r of ranks)freq[r]=(freq[r]||0)+1;
+  const counts=Object.values(freq).sort((a,b)=>b-a);
+  const uniq=[...new Set(ranks)].sort((a,b)=>b-a);
+  let straight=uniq.length===5&&ranks[0]-ranks[4]===4;
+  if(!straight&&ranks.join()===('12,3,2,1,0'))straight=true;
+  let hr;
+  if(straight&&flush) hr=ranks[0]===12?9:8;
+  else if(counts[0]===4) hr=7;
+  else if(counts[0]===3&&counts[1]===2) hr=6;
+  else if(flush) hr=5;
+  else if(straight) hr=4;
+  else if(counts[0]===3) hr=3;
+  else if(counts[0]===2&&counts[1]===2) hr=2;
+  else if(counts[0]===2) hr=1;
+  else hr=0;
+  const byFreq=Object.entries(freq).sort((a,b)=>b[1]-a[1]||b[0]-a[0]).map(e=>+e[0]);
+  return [hr,...byFreq];
+}
+function scoreCmp(a,b){
+  for(let i=0;i<Math.max(a.length,b.length);i++){
+    const d=(a[i]??-1)-(b[i]??-1); if(d!==0)return d;
+  }
+  return 0;
+}
 
-1. Gehe auf [render.com](https://render.com) und melde dich mit GitHub an
-2. Klicke **"New" → "Web Service"**
-3. Wähle dieses Repository
-4. Einstellungen:
-   - **Build Command:** `npm install`
-   - **Start Command:** `node server.js`
-   - **Plan:** Free
-5. Nach dem Deploy erhältst du eine URL wie `https://royal-poker.onrender.com`
-6. Diese URL im TV öffnen → QR-Code scannen → spielen!
+// ═══════════════════════════════════════════════════════════════════════════════
+//  BETTING ROUND ENGINE  v14
+//
+//  Konzept: _closingPlayer  (der Spieler, der die Runde schließt)
+//
+//  Pre-Flop:
+//    firstToAct    = UTG  (Spieler links vom BB)
+//    _closingPlayer = BB  ← BB hat die Option als letzter (check oder raise)
+//    Heads-Up Pre-Flop:
+//    firstToAct    = SB/Dealer  (handelt zuerst)
+//    _closingPlayer = BB         (hat Option zuletzt)
+//
+//  Post-Flop (Flop/Turn/River):
+//    firstToAct    = erster aktiver Spieler links vom Dealer
+//    _closingPlayer = letzter aktiver Spieler vor firstToAct
+//                    (= Dealer oder nächster davor, wenn Dealer gefoldet)
+//    Heads-Up Post-Flop:
+//    firstToAct    = BB  (handelt zuerst)
+//    _closingPlayer = Dealer/SB (handelt zuletzt)
+//
+//  Nach Raise/Bet:
+//    _closingPlayer = Raiser selbst
+//    → alle anderen handeln, Raiser schließt als letzter
+//
+//  Wenn _closingPlayer foldet:
+//    _closingPlayer = vorheriger aktiver Spieler (_prevActive)
+//
+//  inProgress():
+//    numActive > 1  UND  (ersteAktion ODER pointer != _closingPlayer)
+//    → Runde endet genau NACHDEM _closingPlayer seine Aktion ausgeführt hat
+// ═══════════════════════════════════════════════════════════════════════════════
+class BettingRound {
+  // activePlayers  : boolean[]  — true = sitzt noch in dieser Straße
+  // firstToAct     : Seat-Index des ersten Akteurs
+  // closingPlayer  : Seat-Index des letzten Akteurs (schließt die Runde)
+  //   Pre-Flop     : closingPlayer = bbSeat  (BB hat Option als letzter)
+  //   Post-Flop    : closingPlayer = prevActiveSeat(firstToAct)  (Dealer oder davor)
+  //   Heads-Up PF  : closingPlayer = bbSeat  (SB/Dealer handelt zuerst, BB zuletzt)
+  //   Heads-Up PF+ : closingPlayer = dealerSeat  (BB zuerst, Dealer/SB zuletzt)
+  //   Nach Raise   : closingPlayer = Raiser  (alle anderen handeln, Raiser schließt)
+  // biggestBet     : bereits geposteter Höchsteinsatz (BB-Betrag pre-flop, 0 post-flop)
+  // minRaise       : Mindest-Erhöhungsinkrement (= bigBlind)
+  constructor(activePlayers, firstToAct, closingPlayer, biggestBet, minRaise) {
+    this._active   = activePlayers.slice();
+    // _acted[i] = true sobald Seat i in dieser Straße gehandelt hat
+    this._acted    = new Array(activePlayers.length).fill(false);
+    this._playerToAct   = firstToAct;
+    this._closingPlayer = closingPlayer;
+    this._biggestBet    = biggestBet;
+    this._minRaise      = minRaise;
+    this._done          = false;   // true = Straße abgeschlossen
+    this._numActive     = activePlayers.filter(Boolean).length;
+  }
 
-> ⚠️ **Render Free Tier**: Der Server schläft nach 15 Min Inaktivität ein.
-> Beim ersten Aufruf kann es 30–60 Sekunden dauern bis er aufwacht.
-> Railway hat dieses Problem nicht.
+  playerToAct() { return this._playerToAct; }
+  biggestBet()  { return this._biggestBet; }
+  minRaise()    { return this._minRaise; }
+  numActive()   { return this._numActive; }
 
----
+  inProgress() {
+    return !this._done && this._numActive > 1;
+  }
 
-## 🎮 So wird gespielt
+  // RAISE oder BET: Raiser wird neuer closingPlayer, alle anderen müssen nochmal
+  aggressive(newTotalBet) {
+    this._minRaise        = Math.max(newTotalBet - this._biggestBet, this._minRaise);
+    this._biggestBet      = newTotalBet;
+    this._closingPlayer   = this._playerToAct;
+    // Alle _acted zurücksetzen — alle müssen auf den Raise reagieren
+    this._acted           = new Array(this._active.length).fill(false);
+    this._acted[this._playerToAct] = true; // Raiser selbst hat seinen Zug gemacht
+    this._advanceToNext();
+  }
 
-```
-1. TV/Monitor: Deine Railway/Render-URL im Browser öffnen
-              → QR-Code und Raum-Code werden angezeigt
+  // CHECK oder CALL: dieser Spieler ist fertig
+  passive() {
+    this._acted[this._playerToAct] = true;
+    const wasClosure = (this._playerToAct === this._closingPlayer);
+    this._advanceToNext();
+    if (wasClosure) this._done = true; // closingPlayer hat gehandelt → Ende
+  }
 
-2. Spieler 1:  QR-Code scannen
-              → Avatar & Name wählen → Beitreten
-              → Du bist automatisch MASTER
-              → Einstellungen vornehmen (Bots, Blinds, Startkapital...)
-              → "Spiel starten" drücken
+  // FOLD: Spieler aus der Runde entfernen
+  leave() {
+    const folded = this._playerToAct;
+    this._active[folded] = false;
+    this._acted[folded]  = true;
+    this._numActive = Math.max(0, this._numActive - 1);
 
-3. Weitere:    QR-Code scannen oder URL + Raum-Code manuell eingeben
-              → Avatar & Name → Beitreten → warten
-```
+    if (this._numActive <= 1) { this._done = true; return; }
 
-Alle Spieler weltweit können mitspielen, solange sie die URL haben.
+    // Wenn der closingPlayer foldet → vorheriger noch aktiver Spieler übernimmt
+    if (folded === this._closingPlayer) {
+      const prev = this._prevActive(folded);
+      this._closingPlayer = prev;
+      // Hat dieser schon gehandelt? Dann gibt es nichts mehr zu tun → Runde endet
+      if (this._acted[prev]) { this._done = true; return; }
+    }
+    this._advanceToNext();
+  }
 
----
+  // Pointer zum nächsten Spieler der noch NICHT gehandelt hat
+  _advanceToNext() {
+    const n = this._active.length;
+    // Finde nächsten Seat ab aktuellem+1, der aktiv und noch nicht gehandelt hat
+    for (let i = 1; i <= n; i++) {
+      const s = (this._playerToAct + i) % n;
+      if (this._active[s] && !this._acted[s]) {
+        this._playerToAct = s;
+        return;
+      }
+    }
+    // Alle haben gehandelt → Runde ist vorbei
+    this._done = true;
+  }
 
-## ⚙️ Einstellungen (Master)
+  // Letzten aktiven Spieler VOR seat finden (rückwärts)
+  _prevActive(seat) {
+    const n = this._active.length;
+    for (let i = 1; i <= n; i++) {
+      const s = (seat - i + n) % n;
+      if (s !== seat && this._active[s]) return s;
+    }
+    return seat;
+  }
+}
 
-| Einstellung | Beschreibung |
-|---|---|
-| Bots | 0–5 KI-Gegner (Leicht / Mittel / Schwer) |
-| Startkapital | Chips pro Spieler |
-| Start Small Blind | Anfangs-Blind |
-| Blind-Erhöhung | Alle X Hände steigen die Blinds |
-| Max. Blind | Obergrenze für Blind-Erhöhungen |
-| Timer | Sekunden pro Zug (oder unbegrenzt) |
-| Karten zeigen | Alle Karten am Showdown sichtbar |
+// ─── Room factory ─────────────────────────────────────────────────────────────
+const rooms = {}, socketRoom = {};
 
----
+function newRoom() {
+  const code = randCode();
+  rooms[code] = {
+    code, phase:'lobby',
+    players:[], deck:[], community:[],
+    pot:0, dealerSeat:-1,
+    bettingRound:null,
+    handNum:0,
+    settings:{
+      startStack:5000, smallBlind:25, bigBlind:50,
+      blindRaiseEvery:5, maxBlind:800, botCount:0,
+      botDifficulty:'medium', timer:30
+    },
+    timerInterval:null, timerLeft:0,
+    handsSinceBlind:0, tvSocketId:null,
+  };
+  return code;
+}
 
-## 📱 Handy – 3 Views
+// ─── State broadcast ──────────────────────────────────────────────────────────
+function pubState(room, forId) {
+  const reveal = room.phase==='showdown'||room.phase==='winner';
+  const br     = room.bettingRound;
+  const actSeat= (br&&br.inProgress()) ? br.playerToAct() : -1;
+  return {
+    code:room.code, phase:room.phase, pot:room.pot,
+    community:room.community, handNum:room.handNum,
+    settings:room.settings, actionSeat:actSeat,
+    dealerSeat:room.dealerSeat,
+    highestBet: br ? br.biggestBet() : 0,
+    timerLeft:room.timerLeft,
+    players:room.players.map((p,i)=>({
+      id:p.id, name:p.name, avatar:p.avatar,
+      stack:p.stack, bet:p.bet, status:p.status,
+      isDealer:i===room.dealerSeat,
+      isSB:p.isSB, isBB:p.isBB,
+      isMaster:p.isMaster, isBot:p.isBot,
+      isActive:i===actSeat,
+      lastAction:p.lastAction,
+      handName:reveal?(p.handName||''):'',
+      cards:(p.id===forId||reveal)?p.cards:(p.cards.length?['??','??']:[]),
+    })),
+  };
+}
 
-| View | Funktion |
-|---|---|
-| 👁 View 1 | Karten sichtbar + Bet-Slider + 5 Aktions-Buttons |
-| 👁 View 2 | Karten verdeckt – nach oben wischen zum spähen |
-| 👁 View 3 | Mini-Tischansicht mit allen Spielern |
+function broadcast(room) {
+  if (room.tvSocketId) io.to(room.tvSocketId).emit('game-state',pubState(room,'__tv__'));
+  for (const p of room.players)
+    if (!p.isBot&&p.socketId) io.to(p.socketId).emit('game-state',pubState(room,p.id));
+}
 
----
+function clearTimer(room) {
+  if (room.timerInterval){clearInterval(room.timerInterval);room.timerInterval=null;}
+  room.timerLeft=0;
+}
 
-## 💻 Lokal ausführen
+// ─── Start game (add bots, kick off first hand) ───────────────────────────────
+const BOT_NAMES=['Dealer Dan','Lucky Lou','Ace Annie','Bluff Bill','Sharp Sid'];
+const BOT_AVS  =['🤖','🎲','💀','👾','🃏'];
 
-```bash
-npm install
-npm start
-# TV:    http://localhost:3000
-# Phone: http://localhost:3000/phone.html?room=CODE
-```
+function startGame(room) {
+  for (let i=0;i<room.settings.botCount;i++) {
+    room.players.push({
+      id:'bot_'+i, socketId:null,
+      name:BOT_NAMES[i]||'Bot '+(i+1), avatar:BOT_AVS[i]||'🤖',
+      stack:room.settings.startStack, bet:0, status:'waiting',
+      cards:[], isBot:true, isMaster:false,
+      isSB:false, isBB:false, handName:'', lastAction:null,
+    });
+  }
+  room.phase='dealing';
+  broadcast(room);
+  setTimeout(()=>startHand(room),800);
+}
 
----
+// ─── Start hand ───────────────────────────────────────────────────────────────
+function startHand(room) {
+  clearTimer(room);
+  for (const p of room.players) if (p.stack<=0) p.status='out';
+  if (room.players.filter(p=>p.stack>0).length<2) { endGame(room); return; }
 
-## 🛠 Technologie
+  room.handNum++;
+  room.deck=makeDeck(); room.community=[]; room.pot=0; room.bettingRound=null;
+  room.phase='preflop';
 
-- **Backend:** Node.js + Socket.IO (kein Framework)
-- **Frontend:** Vanilla HTML/CSS/JS – keine Build-Tools nötig
-- **PWA:** Installierbar auf dem Homescreen, funktioniert im Vollbild
-- **Fonts:** Cinzel, Cinzel Decorative, IM Fell English
+  for (const p of room.players) {
+    p.bet=0; p.cards=[]; p.isSB=false; p.isBB=false;
+    p.handName=''; p.lastAction=null;
+    p.status=p.stack>0?'active':'out';
+  }
+
+  // Advance dealer
+  const n=room.players.length;
+  let d=room.dealerSeat<0?n-1:room.dealerSeat;
+  for (let i=1;i<=n;i++){const s=(d+i)%n;if(room.players[s].status==='active'){room.dealerSeat=s;break;}}
+
+  // ── Blind assignment ──────────────────────────────────────────────
+  // Texas Hold'em rule: SB = first active left of dealer
+  //                     BB = first active left of SB
+  // Heads-Up (2 players): dealer = SB (acts FIRST pre-flop), BB = other player
+  const activePlayers = room.players.filter(p=>p.status==='active');
+  const headsUp = activePlayers.length === 2;
+
+  let sbSeat, bbSeat, firstToAct;
+  if (headsUp) {
+    // Heads-Up: dealer IS the SB and acts first pre-flop
+    sbSeat = room.dealerSeat;
+    bbSeat = nextAfter(room, sbSeat);
+    firstToAct = sbSeat; // dealer/SB acts first pre-flop in heads-up
+  } else {
+    // Normal: SB left of dealer, BB left of SB, UTG left of BB
+    sbSeat = nextAfter(room, room.dealerSeat);
+    bbSeat = nextAfter(room, sbSeat);
+    firstToAct = nextAfter(room, bbSeat);
+  }
+
+  room.players[sbSeat].isSB=true;
+  room.players[bbSeat].isBB=true;
+
+  placeBet(room,sbSeat,Math.min(room.players[sbSeat].stack,room.settings.smallBlind));
+  placeBet(room,bbSeat,Math.min(room.players[bbSeat].stack,room.settings.bigBlind));
+
+  for (const p of room.players)
+    if (p.status==='active') p.cards=[room.deck.pop(),room.deck.pop()];
+
+  for (const p of room.players)
+    if (!p.isBot&&p.socketId&&p.cards.length)
+      io.to(p.socketId).emit('deal-cards',{cards:p.cards});
+
+  // Pre-Flop BettingRound:
+  //   firstToAct    = UTG (3+ Spieler) oder SB/Dealer (Heads-Up)
+  //   closingPlayer = BB in beiden Fällen — er hat die Option als letzter
+  //   biggestBet    = bereits geposteter BB-Betrag
+  const activeArr=room.players.map(p=>p.status==='active');
+  const bbAmt=room.players[bbSeat].bet;
+  room.bettingRound=new BettingRound(activeArr, firstToAct, bbSeat, bbAmt, room.settings.bigBlind);
+
+  broadcast(room);
+  scheduleAction(room);
+}
+
+function nextAfter(room,seat){
+  const n=room.players.length;
+  for(let i=1;i<=n;i++){const s=(seat+i)%n;if(room.players[s].status==='active')return s;}
+  return seat;
+}
+
+// Letzter aktiver Spieler VOR seat (rückwärts) — für closingPlayer post-flop
+function prevActiveSeat(room,seat){
+  const n=room.players.length;
+  for(let i=1;i<=n;i++){const s=(seat-i+n)%n;if(room.players[s].status==='active')return s;}
+  return seat;
+}
+
+function placeBet(room,seat,amount){
+  const p=room.players[seat];
+  p.stack-=amount; p.bet+=amount; room.pot+=amount;
+  if(p.stack===0) p.status='allIn';
+}
+
+// ─── Schedule action ──────────────────────────────────────────────────────────
+function scheduleAction(room) {
+  clearTimer(room);
+  const br=room.bettingRound;
+
+  // AllIn-Spieler aus der aktiven Menge entfernen (ohne leave() da kein fold)
+  if (br) {
+    for (let i=0;i<room.players.length;i++) {
+      if (br._active[i] && room.players[i].status!=='active') {
+        br._active[i]=false;
+        br._acted[i]=true; // gilt als "gehandelt"
+        br._numActive=Math.max(0,br._numActive-1);
+      }
+    }
+  }
+
+  if (!br||!br.inProgress()) { endStreet(room); return; }
+
+  const seat  =br.playerToAct();
+  const player=room.players[seat];
+
+  if (!player||player.status!=='active') {
+    // Diesen Seat überspringen (allIn oder out — sollte durch sync oben nicht mehr vorkommen)
+    br._active[seat]=false; br._acted[seat]=true;
+    br._numActive=Math.max(0,br._numActive-1);
+    br._advanceToNext();
+    scheduleAction(room); return;
+  }
+
+  const callAmt=Math.min(player.stack, br.biggestBet()-player.bet);
+
+  if (player.isBot) {
+    setTimeout(()=>{
+      const br2=room.bettingRound;
+      if (br2?.inProgress()&&br2.playerToAct()===seat) botDecide(room,seat);
+    },1000+Math.random()*1500);
+    return;
+  }
+
+  broadcast(room);
+  if (player.socketId) {
+    io.to(player.socketId).emit('your-turn',{
+      callAmount:callAmt,
+      validActions:legalActions(player,br),
+      minRaise:br.biggestBet()+br.minRaise(),
+      timerLeft:room.settings.timer,
+    });
+  }
+  if (room.settings.timer>0) {
+    room.timerLeft=room.settings.timer;
+    room.timerInterval=setInterval(()=>{
+      room.timerLeft=Math.max(0,room.timerLeft-1);
+      broadcast(room);
+      if (room.timerLeft<=0){clearTimer(room);applyAction(room,player.id,callAmt===0?'check':'fold',0);}
+    },1000);
+  }
+}
+
+function legalActions(player,br){
+  const call=br.biggestBet()-player.bet;
+  const acts=['fold'];
+  if(call<=0)acts.push('check');
+  else if(player.stack>0)acts.push('call');
+  if(player.stack>call){acts.push('raise');acts.push('allIn');}
+  else if(player.stack>0)acts.push('allIn');
+  return acts;
+}
+
+// ─── Apply action ─────────────────────────────────────────────────────────────
+function applyAction(room,playerId,action,amount) {
+  clearTimer(room);
+  const br=room.bettingRound;
+  if (!br||!br.inProgress()) return;
+
+  const seat  =br.playerToAct();
+  const player=room.players[seat];
+  if (!player||player.id!==playerId) return;
+
+  player.lastAction=action.toUpperCase();
+
+  switch(action) {
+    case 'fold':
+      player.status='folded';
+      br.leave();
+      break;
+
+    case 'check':
+      br.passive();
+      break;
+
+    case 'call': {
+      const ca=Math.min(player.stack,br.biggestBet()-player.bet);
+      placeBet(room,seat,ca);
+      br.passive();
+      break;
+    }
+
+    case 'raise': {
+      const minTotal=br.biggestBet()+br.minRaise();
+      const maxTotal=player.stack+player.bet;
+      const total=Math.max(minTotal,Math.min(amount,maxTotal));
+      const toAdd=Math.min(player.stack,total-player.bet);
+      placeBet(room,seat,toAdd);
+      if(player.stack===0) player.status='allIn';
+      br.aggressive(player.bet);
+      break;
+    }
+
+    case 'allIn': {
+      const toAdd=player.stack;
+      placeBet(room,seat,toAdd);
+      player.status='allIn';
+      if(player.bet>br.biggestBet()) br.aggressive(player.bet);
+      else br.passive();
+      break;
+    }
+  }
+
+  broadcast(room);
+
+  const inHand=room.players.filter(p=>p.status==='active'||p.status==='allIn');
+  if (inHand.length<=1){closeHand(room);return;}
+  if (!br.inProgress()) endStreet(room);
+  else scheduleAction(room);
+}
+
+// ─── End of betting street ────────────────────────────────────────────────────
+function endStreet(room) {
+  clearTimer(room);
+  for (const p of room.players) p.bet=0;
+  room.bettingRound=null;
+
+  const inHand=room.players.filter(p=>p.status==='active'||p.status==='allIn');
+  if (inHand.length<=1){closeHand(room);return;}
+
+  const phases=['preflop','flop','turn','river'];
+  const idx=phases.indexOf(room.phase);
+  if (idx<0||room.phase==='river'){showdown(room);return;}
+
+  room.phase=phases[idx+1];
+  room.deck.pop(); // burn
+  if (room.phase==='flop') room.community.push(room.deck.pop(),room.deck.pop(),room.deck.pop());
+  else room.community.push(room.deck.pop());
+
+  // Clear last actions for new street
+  for (const p of room.players) p.lastAction=null;
+
+  broadcast(room);
+
+  if (room.players.filter(p=>p.status==='active').length===0){showdown(room);return;}
+
+  // Post-Flop Reihenfolge (offizielle Texas Hold'em Regeln):
+  //
+  //   Standard (3+ aktive Spieler):
+  //     firstToAct    = erster aktiver Spieler LINKS vom Dealer (nextAfter dealer)
+  //     closingPlayer = letzter aktiver Spieler VOR firstToAct (= Dealer oder nächster davor)
+  //
+  //   Heads-Up (2 aktive Spieler):
+  //     Pre-Flop:   Dealer/SB zuerst, BB zuletzt  ← bereits in startHand geregelt
+  //     Post-Flop:  BB zuerst, Dealer/SB zuletzt  ← hier umgekehrt!
+  //     → firstToAct = BB-Seat, closingPlayer = Dealer-Seat
+  //       (falls einer nicht mehr aktiv: Fallback auf nextAfter/prevActive)
+  const activeArr=room.players.map(p=>p.status==='active');
+  const activeCnt=activeArr.filter(Boolean).length;
+
+  let postFirst, postClose;
+  if (activeCnt === 2) {
+    // Heads-Up Post-Flop: BB handelt zuerst, Dealer handelt zuletzt
+    const bbIdx=room.players.findIndex(p=>p.isBB&&p.status==='active');
+    const dlrActive=room.players[room.dealerSeat]?.status==='active';
+    if (bbIdx>=0 && dlrActive) {
+      postFirst = bbIdx;
+      postClose = room.dealerSeat;
+    } else {
+      // Fallback: einer von beiden ist raus → Standard-Logik
+      postFirst = nextAfter(room, room.dealerSeat);
+      postClose = prevActiveSeat(room, postFirst);
+    }
+  } else {
+    // Standard Post-Flop
+    postFirst = nextAfter(room, room.dealerSeat);
+    postClose = prevActiveSeat(room, postFirst);
+  }
+
+  room.bettingRound=new BettingRound(activeArr, postFirst, postClose, 0, room.settings.bigBlind);
+  scheduleAction(room);
+}
+
+// ─── Showdown ─────────────────────────────────────────────────────────────────
+function showdown(room) {
+  clearTimer(room);
+  room.phase='showdown'; room.bettingRound=null;
+
+  while (room.community.length<5){
+    room.deck.pop();
+    if(room.community.length<3) room.community.push(room.deck.pop(),room.deck.pop(),room.deck.pop());
+    else room.community.push(room.deck.pop());
+  }
+
+  const inHand=room.players.filter(p=>(p.status==='active'||p.status==='allIn')&&p.cards.length===2);
+  for (const p of inHand){
+    const sc=evaluate([...p.cards,...room.community]);
+    p.handName=sc?HAND_NAMES[sc[0]]:'High Card'; p._score=sc;
+  }
+  broadcast(room);
+
+  let best=null;
+  for (const p of inHand) if(p._score&&(!best||scoreCmp(p._score,best)>0)) best=p._score;
+  const winners=inHand.filter(p=>p._score&&scoreCmp(p._score,best)===0);
+  const share=winners.length?Math.floor(room.pot/winners.length):0;
+  for (const w of winners) w.stack+=share;
+
+  io.to(room.code).emit('winner',{
+    winners:winners.map(w=>({id:w.id,name:w.name,avatar:w.avatar,handName:w.handName,amount:share})),
+    pot:room.pot,
+  });
+  room.phase='winner';
+  broadcast(room);
+  nextHandTimer(room);
+}
+
+// ─── Close hand (last player wins uncontested) ────────────────────────────────
+function closeHand(room) {
+  clearTimer(room);
+  room.bettingRound=null;
+  const last=room.players.find(p=>p.status==='active'||p.status==='allIn');
+  if (last){
+    last.stack+=room.pot;
+    io.to(room.code).emit('winner',{
+      winners:[{id:last.id,name:last.name,avatar:last.avatar,handName:'',amount:room.pot}],
+      pot:room.pot,
+    });
+  }
+  room.phase='winner';
+  broadcast(room);
+  nextHandTimer(room);
+}
+
+function nextHandTimer(room) {
+  room.handsSinceBlind=(room.handsSinceBlind||0)+1;
+  if(room.settings.blindRaiseEvery>0&&room.handsSinceBlind>=room.settings.blindRaiseEvery){
+    room.handsSinceBlind=0;
+    room.settings.smallBlind=Math.min(room.settings.smallBlind*2,room.settings.maxBlind);
+    room.settings.bigBlind=room.settings.smallBlind*2;
+    io.to(room.code).emit('blind-raise',{small:room.settings.smallBlind,big:room.settings.bigBlind});
+  }
+  setTimeout(()=>{
+    for(const p of room.players) if(p.stack<=0) p.status='out';
+    if(room.players.filter(p=>p.stack>0).length<2){endGame(room);return;}
+    startHand(room);
+  },5000);
+}
+
+function endGame(room) {
+  clearTimer(room);
+  const winner=[...room.players].sort((a,b)=>b.stack-a.stack)[0];
+  room.phase='gameover'; room.bettingRound=null;
+  io.to(room.code).emit('game-over',{winner,players:room.players});
+  broadcast(room);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  BOT AI
+// ═══════════════════════════════════════════════════════════════════════════════
+function chenScore(cards){
+  if(!cards||cards.length<2)return 0;
+  const r1=cRank(cards[0]),r2=cRank(cards[1]);
+  const hi=Math.max(r1,r2),lo=Math.min(r1,r2),gap=hi-lo;
+  const suited=cards[0][1]===cards[1][1];
+  const tbl=[0,0,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8,10];
+  let score=tbl[hi]??hi/2;
+  if(gap===0){score=Math.max(score*2,5);return Math.min(score/20,1);}
+  if(suited)score+=2;
+  if(gap===2)score-=1;else if(gap===3)score-=2;else if(gap>=4)score-=4;
+  if(hi<=9&&gap<=1)score+=1;
+  return Math.min(Math.max(score,0)/20,1);
+}
+
+function mcEquity(hole,community,numOpp,sims){
+  if(!hole||hole.length<2)return 0.3;
+  numOpp=Math.max(1,numOpp);sims=sims||200;
+  const known=new Set([...hole,...community].filter(c=>c&&c!=='??'));
+  const avail=[];
+  for(const s of 'shdc')for(const r of '23456789TJQKA'){const c=r+s;if(!known.has(c))avail.push(c);}
+  const fill=5-community.length;
+  let wins=0,ties=0;
+  for(let sim=0;sim<sims;sim++){
+    const d=avail.slice();
+    for(let i=d.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]];}
+    const board=[...community,...d.slice(0,fill)];
+    let ptr=fill;
+    const opps=[];for(let o=0;o<numOpp;o++)opps.push([d[ptr++],d[ptr++]]);
+    const mine=evaluate([...hole,...board]);
+    if(!mine)continue;
+    let best=true,tie=false;
+    for(const opp of opps){
+      const os=evaluate([...opp,...board]);
+      if(!os)continue;
+      const cv=scoreCmp(mine,os);
+      if(cv<0){best=false;break;}if(cv===0)tie=true;
+    }
+    if(best&&tie)ties++;else if(best)wins++;
+  }
+  return(wins+ties*0.5)/sims;
+}
+
+function botDecide(room,seat){
+  const br=room.bettingRound;
+  if(!br||!br.inProgress())return;
+  const bot=room.players[seat];
+  if(!bot||bot.status!=='active')return;
+
+  const diff=room.settings.botDifficulty;
+  const numOpp=room.players.filter(p=>p.status==='active'||p.status==='allIn').length-1;
+  const callAmt=Math.min(bot.stack,br.biggestBet()-bot.bet);
+
+  let eq;
+  if(room.phase==='preflop'){
+    const chen=chenScore(bot.cards);
+    if(diff==='easy')eq=chen;
+    else{const mc=mcEquity(bot.cards,[],numOpp,diff==='hard'?120:60);eq=diff==='hard'?chen*0.3+mc*0.7:chen*0.5+mc*0.5;}
+  }else{
+    eq=mcEquity(bot.cards,room.community,numOpp,diff==='hard'?300:diff==='medium'?200:100);
+  }
+  eq=Math.min(eq,0.99);
+
+  const potOdds=callAmt>0?callAmt/(room.pot+callAmt):0;
+  const bluff=Math.random()<(diff==='hard'?0.10:diff==='medium'?0.05:0.02)&&callAmt<=room.pot*0.35;
+  const foldTh =diff==='hard'?0.28:diff==='medium'?0.33:0.40;
+  const raiseTh=diff==='hard'?0.58:diff==='medium'?0.63:0.70;
+  const rrTh   =diff==='hard'?0.75:diff==='medium'?0.80:0.87;
+
+  let action='fold',amount=0;
+  if(callAmt===0){
+    if(eq>raiseTh||bluff){
+      action='raise';
+      amount=Math.floor(br.biggestBet()+Math.max(br.minRaise(),room.pot*(0.5+Math.random()*0.5)));
+      amount=Math.min(amount,bot.stack+bot.bet);
+    }else action='check';
+  }else{
+    if(eq<foldTh&&!bluff&&potOdds>eq)action='fold';
+    else if(eq>rrTh||bluff){
+      action='raise';
+      amount=Math.floor(br.biggestBet()+Math.max(br.minRaise(),room.pot*(0.6+Math.random()*0.6)));
+      amount=Math.min(amount,bot.stack+bot.bet);
+    }else if(eq>raiseTh&&Math.random()<0.55){
+      action='raise';
+      amount=Math.floor(br.biggestBet()+Math.max(br.minRaise(),room.pot*0.5));
+      amount=Math.min(amount,bot.stack+bot.bet);
+    }else{
+      action=potOdds<eq+0.06?'call':'fold';
+    }
+  }
+  if(action==='raise'&&amount>=bot.stack+bot.bet)action='allIn';
+  if(action==='call'&&bot.stack<=callAmt)action='allIn';
+  if(diff==='easy'&&Math.random()<0.12){if(action==='call')action='fold';else if(action==='raise'){action='call';amount=0;}}
+
+  applyAction(room,bot.id,action,amount);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  SOCKET EVENTS
+// ═══════════════════════════════════════════════════════════════════════════════
+io.on('connection',socket=>{
+
+  socket.on('create-room',()=>{
+    const code=newRoom();
+    socketRoom[socket.id]=code;
+    rooms[code].tvSocketId=socket.id;
+    socket.join(code);
+    socket.emit('room-created',{code});
+  });
+
+  socket.on('join-room',({code,name,avatar})=>{
+    const cu=(code||'').toUpperCase();
+    const room=rooms[cu];
+    if(!room){socket.emit('error',{msg:'Raum nicht gefunden'});return;}
+    if(room.phase!=='lobby'&&room.phase!=='setup'){socket.emit('error',{msg:'Spiel bereits gestartet'});return;}
+    socketRoom[socket.id]=cu;
+    socket.join(cu);
+    const isMaster=room.players.filter(p=>!p.isBot).length===0;
+    room.players.push({
+      id:socket.id,socketId:socket.id,
+      name:name||'Spieler',avatar:avatar||'🎩',
+      stack:room.settings.startStack,bet:0,
+      status:'waiting',cards:[],isBot:false,isMaster,
+      isSB:false,isBB:false,handName:'',lastAction:null,
+    });
+    if(isMaster)room.phase='setup';
+    socket.emit('joined',{playerId:socket.id,isMaster});
+    if(room.tvSocketId)io.to(room.tvSocketId).emit('player-joined',{player:{id:socket.id,name:name||'Spieler',avatar:avatar||'🎩'}});
+    broadcast(room);
+  });
+
+  socket.on('update-settings',settings=>{
+    const room=rooms[socketRoom[socket.id]];
+    if(!room)return;
+    const p=room.players.find(p=>p.id===socket.id);
+    if(!p?.isMaster)return;
+    Object.assign(room.settings,settings);
+    if(room.phase==='setup')for(const pl of room.players)pl.stack=room.settings.startStack;
+    broadcast(room);
+  });
+
+  socket.on('start-game',()=>{
+    const room=rooms[socketRoom[socket.id]];
+    if(!room)return;
+    const p=room.players.find(p=>p.id===socket.id);
+    if(!p?.isMaster)return;
+    startGame(room);
+  });
+
+  socket.on('player-action',({action,amount})=>{
+    const room=rooms[socketRoom[socket.id]];
+    if(!room)return;
+    const br=room.bettingRound;
+    if(!br||!br.inProgress())return;
+    const actSeat=br.playerToAct();
+    if(room.players[actSeat]?.id!==socket.id)return;
+    applyAction(room,socket.id,action,amount||0);
+  });
+
+  socket.on('new-game',()=>{
+    const code=socketRoom[socket.id];
+    const room=rooms[code];
+    if(!room)return;
+    const isTv=room.tvSocketId===socket.id;
+    const p=room.players.find(p=>p.socketId===socket.id);
+    if(!isTv&&!p?.isMaster)return;
+    clearTimer(room);
+    Object.assign(room,{
+      phase:'lobby',players:[],community:[],pot:0,
+      bettingRound:null,deck:[],handNum:0,handsSinceBlind:0,dealerSeat:-1,
+    });
+    io.to(code).emit('new-game-started');
+    broadcast(room);
+  });
+
+  socket.on('disconnect',()=>{
+    const code=socketRoom[socket.id];
+    delete socketRoom[socket.id];
+    if(!code||!rooms[code])return;
+    const room=rooms[code];
+    if(room.tvSocketId===socket.id){room.tvSocketId=null;return;}
+    const pidx=room.players.findIndex(p=>p.socketId===socket.id);
+    if(pidx<0)return;
+    const p=room.players[pidx];
+    if(['preflop','flop','turn','river'].includes(room.phase)){
+      const br=room.bettingRound;
+      if(br&&br.inProgress()&&br.playerToAct()===pidx){
+        applyAction(room,p.id,'fold',0);
+      }else{
+        p.status='folded';p.lastAction='FOLD';
+        if(br){br._active[pidx]=false;br._numActive=Math.max(0,br._numActive-1);}
+        broadcast(room);
+      }
+    }
+    if(p.isMaster){
+      const next=room.players.find(pp=>!pp.isBot&&pp.id!==p.id&&pp.socketId);
+      if(next){next.isMaster=true;io.to(next.socketId).emit('master-assigned');}
+    }
+  });
+});
+
+const PORT=process.env.PORT||3000;
+httpServer.listen(PORT,'0.0.0.0',()=>console.log(`\n♠ Royal Poker auf Port ${PORT}`));
