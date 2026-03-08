@@ -132,20 +132,22 @@ class BettingRound {
   // activePlayers  : boolean[]  — true = sitzt noch in dieser Straße
   // firstToAct     : Seat-Index des ersten Akteurs
   // closingPlayer  : Seat-Index des letzten Akteurs (schließt die Runde)
-  //   Pre-Flop     : closingPlayer = bbSeat
-  //   Post-Flop    : closingPlayer = dealerSeat (Dealer agiert zuletzt)
-  //   Nach Raise   : closingPlayer = Raiser
-  // biggestBet     : bereits geposteter Höchsteinsatz
-  // minRaise       : Mindest-Erhöhungsinkrement
+  //   Pre-Flop     : closingPlayer = bbSeat  (BB hat Option als letzter)
+  //   Post-Flop    : closingPlayer = prevActiveSeat(firstToAct)  (Dealer oder davor)
+  //   Heads-Up PF  : closingPlayer = bbSeat  (SB/Dealer handelt zuerst, BB zuletzt)
+  //   Heads-Up PF+ : closingPlayer = dealerSeat  (BB zuerst, Dealer/SB zuletzt)
+  //   Nach Raise   : closingPlayer = Raiser  (alle anderen handeln, Raiser schließt)
+  // biggestBet     : bereits geposteter Höchsteinsatz (BB-Betrag pre-flop, 0 post-flop)
+  // minRaise       : Mindest-Erhöhungsinkrement (= bigBlind)
   constructor(activePlayers, firstToAct, closingPlayer, biggestBet, minRaise) {
-    this._active        = activePlayers.slice();
-    this._acted         = new Array(activePlayers.length).fill(false);
-    this._firstToAct    = firstToAct;   // Startpunkt der Spielreihenfolge
+    this._active   = activePlayers.slice();
+    // _acted[i] = true sobald Seat i in dieser Straße gehandelt hat
+    this._acted    = new Array(activePlayers.length).fill(false);
     this._playerToAct   = firstToAct;
     this._closingPlayer = closingPlayer;
     this._biggestBet    = biggestBet;
     this._minRaise      = minRaise;
-    this._done          = false;
+    this._done          = false;   // true = Straße abgeschlossen
     this._numActive     = activePlayers.filter(Boolean).length;
   }
 
@@ -154,77 +156,69 @@ class BettingRound {
   minRaise()    { return this._minRaise; }
   numActive()   { return this._numActive; }
 
-  inProgress()  { return !this._done && this._numActive > 1; }
+  inProgress() {
+    return !this._done && this._numActive > 1;
+  }
 
-  // RAISE/BET: Raiser wird neuer closingPlayer, alle _acted zurücksetzen
+  // RAISE oder BET: Raiser wird neuer closingPlayer, alle anderen müssen nochmal
   aggressive(newTotalBet) {
     this._minRaise        = Math.max(newTotalBet - this._biggestBet, this._minRaise);
     this._biggestBet      = newTotalBet;
     this._closingPlayer   = this._playerToAct;
-    // Neuer Startpunkt = nächster Spieler nach Raiser (in Spielreihenfolge)
-    this._firstToAct      = this._nextInOrder(this._playerToAct);
+    // Alle _acted zurücksetzen — alle müssen auf den Raise reagieren
     this._acted           = new Array(this._active.length).fill(false);
-    this._acted[this._playerToAct] = true;
+    this._acted[this._playerToAct] = true; // Raiser selbst hat seinen Zug gemacht
     this._advanceToNext();
   }
 
-  // CHECK/CALL
+  // CHECK oder CALL: dieser Spieler ist fertig
   passive() {
     this._acted[this._playerToAct] = true;
     const wasClosure = (this._playerToAct === this._closingPlayer);
     this._advanceToNext();
-    if (wasClosure) this._done = true;
+    if (wasClosure) this._done = true; // closingPlayer hat gehandelt → Ende
   }
 
-  // FOLD
+  // FOLD: Spieler aus der Runde entfernen
   leave() {
     const folded = this._playerToAct;
     this._active[folded] = false;
     this._acted[folded]  = true;
     this._numActive = Math.max(0, this._numActive - 1);
+
     if (this._numActive <= 1) { this._done = true; return; }
+
+    // Wenn der closingPlayer foldet → vorheriger noch aktiver Spieler übernimmt
     if (folded === this._closingPlayer) {
-      // closingPlayer foldet → vorheriger aktiver Spieler in der Reihenfolge übernimmt
-      const prev = this._prevInOrder(folded);
+      const prev = this._prevActive(folded);
       this._closingPlayer = prev;
+      // Hat dieser schon gehandelt? Dann gibt es nichts mehr zu tun → Runde endet
       if (this._acted[prev]) { this._done = true; return; }
     }
     this._advanceToNext();
   }
 
-  // Nächsten Spieler in der SPIELREIHENFOLGE finden (ab firstToAct, aufsteigend mod n)
-  // der noch nicht gehandelt hat
+  // Pointer zum nächsten Spieler der noch NICHT gehandelt hat
   _advanceToNext() {
     const n = this._active.length;
-    // Iteriere in Spielreihenfolge: firstToAct, firstToAct+1, ..., closingPlayer
-    // Finde den ersten der noch active && !acted ist
-    for (let i = 0; i < n; i++) {
-      const s = (this._firstToAct + i) % n;
+    // Finde nächsten Seat ab aktuellem+1, der aktiv und noch nicht gehandelt hat
+    for (let i = 1; i <= n; i++) {
+      const s = (this._playerToAct + i) % n;
       if (this._active[s] && !this._acted[s]) {
         this._playerToAct = s;
         return;
       }
-      if (s === this._closingPlayer) break; // closingPlayer ist der letzte — danach Ende
     }
+    // Alle haben gehandelt → Runde ist vorbei
     this._done = true;
   }
 
-  // Nächster aktiver Seat nach `seat` in Spielreihenfolge (+1 mod n)
-  _nextInOrder(seat) {
-    const n = this._active.length;
-    for (let i = 1; i <= n; i++) {
-      const s = (seat + i) % n;
-      if (this._active[s]) return s;
-    }
-    return seat;
-  }
-
-  // Vorheriger aktiver Seat vor `seat` in Spielreihenfolge (-1 mod n)
-  _prevInOrder(seat) {
+  // Letzten aktiven Spieler VOR seat finden (rückwärts)
+  _prevActive(seat) {
     const n = this._active.length;
     for (let i = 1; i <= n; i++) {
       const s = (seat - i + n) % n;
-      if (this._active[s] && s !== seat) return s;
+      if (s !== seat && this._active[s]) return s;
     }
     return seat;
   }
@@ -329,33 +323,32 @@ function startHand(room) {
   let d=room.dealerSeat<0?n-1:room.dealerSeat;
   for (let i=1;i<=n;i++){const s=(d+i)%n;if(room.players[s].status==='active'){room.dealerSeat=s;break;}}
 
-  // ── Blind & Positions-Zuweisung (offizielle Texas Hold'em Regeln) ─────────
-  // Uhrzeigersinn = aufsteigende Seat-Indizes auf dem TV
+  // ── Blind & Positions-Zuweisung ───────────────────────────────────────
+  // Uhrzeigersinn auf TV: Dealer(0) → UTG(1) → UTG+1(2) → ... → SB(n-2) → BB(n-1) → Dealer
   //
-  // SB  = direkt LINKS vom Dealer  = nextAfter(dealer)
-  // BB  = direkt LINKS vom SB      = nextAfter(SB)
-  // UTG = direkt LINKS vom BB      = nextAfter(BB)  → handelt PRE-FLOP ZUERST
-  // BB  handelt PRE-FLOP ZULETZT   = closingPlayer pre-flop (BB-Option!)
+  // SB sitzt LINKS vom Dealer  = 2 Seats VOR Dealer (rückwärts im UZS)
+  // BB sitzt LINKS vom SB      = 1 Seat  VOR Dealer (rückwärts im UZS)
+  // UTG = erster nach Dealer   = 1 Seat  NACH Dealer (vorwärts im UZS)
   //
-  // POST-FLOP: SB handelt ZUERST, Dealer (BTN) handelt ZULETZT
+  // prevBefore(dealer) = BB, prevBefore(BB) = SB
+  // nextAfter(dealer)  = UTG = firstToAct pre-flop
   //
-  // HEADS-UP (2 Spieler):
-  //   Dealer = SB, handelt pre-flop ZUERST
-  //   BB = anderer Spieler, handelt pre-flop ZULETZT (Option)
-  //   Post-flop: BB zuerst, Dealer/SB zuletzt
+  // Heads-Up: Dealer = SB (handelt pre-flop zuerst), BB = prevBefore(dealer) = anderer Spieler
 
   const activePlayers = room.players.filter(p=>p.status==='active');
   const headsUp = activePlayers.length === 2;
 
   let sbSeat, bbSeat, firstToAct;
   if (headsUp) {
-    sbSeat     = room.dealerSeat;                // Dealer = SB heads-up
-    bbSeat     = nextAfter(room, sbSeat);        // anderer Spieler = BB
-    firstToAct = sbSeat;                         // SB/Dealer handelt zuerst pre-flop
+    // Heads-Up: Dealer IS SB, agiert pre-flop zuerst
+    sbSeat     = room.dealerSeat;
+    bbSeat     = prevBefore(room, sbSeat);
+    firstToAct = sbSeat;
   } else {
-    sbSeat     = nextAfter(room, room.dealerSeat); // SB links vom Dealer
-    bbSeat     = nextAfter(room, sbSeat);           // BB links vom SB
-    firstToAct = nextAfter(room, bbSeat);           // UTG links vom BB = erster pre-flop
+    // Normal: BB direkt vor Dealer, SB vor BB, UTG direkt nach Dealer
+    bbSeat     = prevBefore(room, room.dealerSeat);
+    sbSeat     = prevBefore(room, bbSeat);
+    firstToAct = nextAfter(room, room.dealerSeat);
   }
 
   room.players[sbSeat].isSB=true;
@@ -372,13 +365,9 @@ function startHand(room) {
       io.to(p.socketId).emit('deal-cards',{cards:p.cards});
 
   // Pre-Flop BettingRound:
-  //   firstToAct    = UTG = nextAfter(dealer)
-  //   closingPlayer = Dealer (agiert zuletzt pre-flop)
-  //   Reihenfolge:  UTG→UTG+1→...→SB→BB→Dealer(closing)
-  //   Heads-Up:     SB/Dealer zuerst, BB closing
-  // Pre-Flop: BB schließt die Runde (hat die Option als letzter)
-  // Reihenfolge: UTG → UTG+1 → ... → Dealer → SB → BB (closing)
-  // Heads-Up:   SB/Dealer zuerst → BB (closing)
+  //   firstToAct    = UTG (3+ Spieler) oder SB/Dealer (Heads-Up)
+  //   closingPlayer = BB in beiden Fällen — er hat die Option als letzter
+  //   biggestBet    = bereits geposteter BB-Betrag
   const activeArr=room.players.map(p=>p.status==='active');
   const bbAmt=room.players[bbSeat].bet;
   room.bettingRound=new BettingRound(activeArr, firstToAct, bbSeat, bbAmt, room.settings.bigBlind);
