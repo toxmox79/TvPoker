@@ -113,8 +113,8 @@ body{background:repeating-linear-gradient(91deg,transparent,transparent 80px,rgb
 .name-plate.active .nm{color:var(--gold-light);}
 .name-plate .stk{font-size:clamp(7px,.75vw,10px);color:var(--gold);}
 .name-plate .hn{font-size:clamp(7px,.7vw,9px);color:#adf;letter-spacing:.5px;}
-.mini-cards{display:flex;gap:2px;position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);}
-.mc{width:clamp(10px,1.1vw,16px);height:clamp(14px,1.5vw,22px);border-radius:2px;background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1px solid var(--gold-dark);}
+.mini-cards{display:flex;gap:4px;position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);}
+.mc{width:clamp(20px,2.2vw,32px);height:clamp(28px,3vw,44px);border-radius:3px;background:linear-gradient(135deg,#1e3a7a,#0d1f4a);border:1px solid var(--gold-dark);}
 .mc.revealed{background:var(--cream);border-color:rgba(0,0,0,.2);}
 .bet-chip{position:absolute;font-size:clamp(12px,1.2vw,18px);font-family:'Cinzel',serif;font-weight:700;color:#ffd700;background:rgba(0,0,0,.75);border:2px solid rgba(200,168,75,.5);border-radius:14px;padding:4px 12px;white-space:nowrap;z-index:6;box-shadow:0 2px 8px rgba(0,0,0,.6);}
 
@@ -655,7 +655,7 @@ function showWinner(winner) {
   document.getElementById('win-banner').textContent = winner.handName || 'Gewinner';
   spawnConfetti();
   document.getElementById('winner-overlay').classList.add('show');
-  var cd = 5;
+  var cd = 2;
   var cdEl = document.getElementById('win-countdown');
   var t = setInterval(function() {
     cd--;
@@ -723,7 +723,7 @@ function makeCardEl(code, extraClass, delay) {
 function makeMiniCard(code) {
   if (!code || code === '??') return '<div class="mc"></div>';
   var r = rankDisplay(code), s = suitSymbol(code), red = isRed(code);
-  return '<div class="mc revealed" style="display:flex;align-items:center;justify-content:center;font-size:7px;color:' + (red ? '#8b1a1a' : '#111') + ';font-family:\'IM Fell English\',serif;font-weight:700">' + r + s + '</div>';
+  return '<div class="mc revealed" style="display:flex;align-items:center;justify-content:center;font-size:clamp(10px,1.3vw,16px);color:' + (red ? '#8b1a1a' : '#111') + ';font-family:\'IM Fell English\',serif;font-weight:700">' + r + s + '</div>';
 }
 
 function showToast(msg) {
