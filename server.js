@@ -323,24 +323,32 @@ function startHand(room) {
   let d=room.dealerSeat<0?n-1:room.dealerSeat;
   for (let i=1;i<=n;i++){const s=(d+i)%n;if(room.players[s].status==='active'){room.dealerSeat=s;break;}}
 
-  // ── Blind assignment ──────────────────────────────────────────────
-  // Texas Hold'em rule: SB = first active left of dealer
-  //                     BB = first active left of SB
-  // Heads-Up (2 players): dealer = SB (acts FIRST pre-flop), BB = other player
+  // ── Blind & Positions-Zuweisung ───────────────────────────────────────
+  // Uhrzeigersinn auf TV: Dealer(0) → UTG(1) → UTG+1(2) → ... → SB(n-2) → BB(n-1) → Dealer
+  //
+  // SB sitzt LINKS vom Dealer  = 2 Seats VOR Dealer (rückwärts im UZS)
+  // BB sitzt LINKS vom SB      = 1 Seat  VOR Dealer (rückwärts im UZS)
+  // UTG = erster nach Dealer   = 1 Seat  NACH Dealer (vorwärts im UZS)
+  //
+  // prevBefore(dealer) = BB, prevBefore(BB) = SB
+  // nextAfter(dealer)  = UTG = firstToAct pre-flop
+  //
+  // Heads-Up: Dealer = SB (handelt pre-flop zuerst), BB = prevBefore(dealer) = anderer Spieler
+
   const activePlayers = room.players.filter(p=>p.status==='active');
   const headsUp = activePlayers.length === 2;
 
   let sbSeat, bbSeat, firstToAct;
   if (headsUp) {
-    // Heads-Up: dealer IS the SB and acts first pre-flop
-    sbSeat = room.dealerSeat;
-    bbSeat = nextAfter(room, sbSeat);
-    firstToAct = sbSeat; // dealer/SB acts first pre-flop in heads-up
+    // Heads-Up: Dealer IS SB, agiert pre-flop zuerst
+    sbSeat     = room.dealerSeat;
+    bbSeat     = prevBefore(room, sbSeat);
+    firstToAct = sbSeat;
   } else {
-    // Normal: SB left of dealer, BB left of SB, UTG left of BB
-    sbSeat = nextAfter(room, room.dealerSeat);
-    bbSeat = nextAfter(room, sbSeat);
-    firstToAct = nextAfter(room, bbSeat);
+    // Normal: BB direkt vor Dealer, SB vor BB, UTG direkt nach Dealer
+    bbSeat     = prevBefore(room, room.dealerSeat);
+    sbSeat     = prevBefore(room, bbSeat);
+    firstToAct = nextAfter(room, room.dealerSeat);
   }
 
   room.players[sbSeat].isSB=true;
@@ -371,6 +379,14 @@ function startHand(room) {
 function nextAfter(room,seat){
   const n=room.players.length;
   for(let i=1;i<=n;i++){const s=(seat+i)%n;if(room.players[s].status==='active')return s;}
+  return seat;
+}
+
+// Nächster aktiver Seat VOR seat (rückwärts im Uhrzeigersinn)
+// Für Blind-Vergabe: BB = prevBefore(dealer), SB = prevBefore(BB)
+function prevBefore(room,seat){
+  const n=room.players.length;
+  for(let i=1;i<=n;i++){const s=(seat-i+n)%n;if(room.players[s].status==='active')return s;}
   return seat;
 }
 
@@ -538,37 +554,30 @@ function endStreet(room) {
 
   if (room.players.filter(p=>p.status==='active').length===0){showdown(room);return;}
 
-  // Post-Flop Reihenfolge (offizielle Texas Hold'em Regeln):
+  // Post-Flop Reihenfolge:
+  //   firstToAct    = UTG = nextAfter(dealer) — erster im Uhrzeigersinn nach Dealer
+  //   closingPlayer = Dealer = prevActiveSeat(firstToAct) — Dealer agiert zuletzt
   //
-  //   Standard (3+ aktive Spieler):
-  //     firstToAct    = erster aktiver Spieler LINKS vom Dealer (nextAfter dealer)
-  //     closingPlayer = letzter aktiver Spieler VOR firstToAct (= Dealer oder nächster davor)
-  //
-  //   Heads-Up (2 aktive Spieler):
-  //     Pre-Flop:   Dealer/SB zuerst, BB zuletzt  ← bereits in startHand geregelt
-  //     Post-Flop:  BB zuerst, Dealer/SB zuletzt  ← hier umgekehrt!
-  //     → firstToAct = BB-Seat, closingPlayer = Dealer-Seat
-  //       (falls einer nicht mehr aktiv: Fallback auf nextAfter/prevActive)
+  // Heads-Up Post-Flop: BB zuerst, Dealer/SB zuletzt (umgekehrt zu Pre-Flop)
   const activeArr=room.players.map(p=>p.status==='active');
   const activeCnt=activeArr.filter(Boolean).length;
 
   let postFirst, postClose;
   if (activeCnt === 2) {
-    // Heads-Up Post-Flop: BB handelt zuerst, Dealer handelt zuletzt
+    // Heads-Up: BB handelt zuerst, Dealer zuletzt
     const bbIdx=room.players.findIndex(p=>p.isBB&&p.status==='active');
     const dlrActive=room.players[room.dealerSeat]?.status==='active';
     if (bbIdx>=0 && dlrActive) {
       postFirst = bbIdx;
       postClose = room.dealerSeat;
     } else {
-      // Fallback: einer von beiden ist raus → Standard-Logik
       postFirst = nextAfter(room, room.dealerSeat);
       postClose = prevActiveSeat(room, postFirst);
     }
   } else {
-    // Standard Post-Flop
+    // Standard: UTG (nextAfter dealer) zuerst, Dealer zuletzt
     postFirst = nextAfter(room, room.dealerSeat);
-    postClose = prevActiveSeat(room, postFirst);
+    postClose = prevActiveSeat(room, postFirst); // = Dealer wenn noch aktiv
   }
 
   room.bettingRound=new BettingRound(activeArr, postFirst, postClose, 0, room.settings.bigBlind);
