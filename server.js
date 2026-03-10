@@ -197,14 +197,14 @@ class BettingRound {
     this._advanceToNext();
   }
 
-  // Nächsten Spieler in der SPIELREIHENFOLGE finden (ab firstToAct, aufsteigend mod n)
+  // Nächsten Spieler in der SPIELREIHENFOLGE finden (gegen Uhrzeigersinn ab firstToAct)
   // der noch nicht gehandelt hat
   _advanceToNext() {
     const n = this._active.length;
-    // Iteriere in Spielreihenfolge: firstToAct, firstToAct+1, ..., closingPlayer
+    // Iteriere in Spielreihenfolge: firstToAct, firstToAct-1, ..., closingPlayer
     // Finde den ersten der noch active && !acted ist
     for (let i = 0; i < n; i++) {
-      const s = (this._firstToAct + i) % n;
+      const s = (this._firstToAct - i + n) % n;
       if (this._active[s] && !this._acted[s]) {
         this._playerToAct = s;
         return;
@@ -214,21 +214,21 @@ class BettingRound {
     this._done = true;
   }
 
-  // Nächster aktiver Seat nach `seat` in Spielreihenfolge (+1 mod n)
+  // Nächster aktiver Seat nach `seat` in Spielreihenfolge (-1 mod n) = gegen Uhrzeigersinn
   _nextInOrder(seat) {
     const n = this._active.length;
     for (let i = 1; i <= n; i++) {
-      const s = (seat + i) % n;
+      const s = (seat - i + n) % n;
       if (this._active[s]) return s;
     }
     return seat;
   }
 
-  // Vorheriger aktiver Seat vor `seat` in Spielreihenfolge (-1 mod n)
+  // Vorheriger aktiver Seat vor `seat` in Spielreihenfolge (+1 mod n) = im Uhrzeigersinn
   _prevInOrder(seat) {
     const n = this._active.length;
     for (let i = 1; i <= n; i++) {
-      const s = (seat - i + n) % n;
+      const s = (seat + i) % n;
       if (this._active[s] && s !== seat) return s;
     }
     return seat;
@@ -334,13 +334,13 @@ function startHand(room) {
   let d=room.dealerSeat<0?n-1:room.dealerSeat;
   for (let i=1;i<=n;i++){const s=(d+i)%n;if(room.players[s].status==='active'){room.dealerSeat=s;break;}}
 
-  // ── Blind & Positions-Zuweisung (offizielle Texas Hold'em Regeln) ─────────
-  // Uhrzeigersinn = aufsteigende Seat-Indizes auf dem TV
+  // -- Blind & Positions-Zuweisung (offizielle Texas Hold'em Regeln) --
+  // Seat-Indizes steigen im Uhrzeigersinn; Spielreihenfolge läuft gegen den Uhrzeigersinn.
   //
-  // SB  = direkt LINKS vom Dealer  = nextAfter(dealer)
-  // BB  = direkt LINKS vom SB      = nextAfter(SB)
-  // UTG = direkt LINKS vom BB      = nextAfter(BB)  → handelt PRE-FLOP ZUERST
-  // BB  handelt PRE-FLOP ZULETZT   = closingPlayer pre-flop (BB-Option!)
+  // SB  = direkt LINKS vom Dealer (gegen Uhrzeigersinn)  = nextAfter(dealer)
+  // BB  = direkt LINKS vom SB      (gegen Uhrzeigersinn) = nextAfter(SB)
+  // UTG = direkt LINKS vom BB      (gegen Uhrzeigersinn) = nextAfter(BB)  → handelt PRE-FLOP ZUERST
+  // BB  handelt PRE-FLOP ZULETZT   = closingPlayer pre-flop (BB-Option, auch Heads-Up)
   //
   // POST-FLOP: SB handelt ZUERST, Dealer (BTN) handelt ZULETZT
   //
@@ -399,23 +399,24 @@ function startHand(room) {
 }
 
 function nextAfter(room,seat){
+  // gegen Uhrzeigersinn (links vom seat)
+  const n=room.players.length;
+  for(let i=1;i<=n;i++){const s=(seat-i+n)%n;if(room.players[s].status==='active' || room.players[s].status==='allIn')return s;}
+  return seat;
+}
+
+// Nächster aktiver Seat VOR seat im Uhrzeigersinn
+// Für Blind-Vergabe: BB = prevBefore(dealer), SB = prevBefore(BB) (Uhrzeigersinn)
+function prevBefore(room,seat){
   const n=room.players.length;
   for(let i=1;i<=n;i++){const s=(seat+i)%n;if(room.players[s].status==='active' || room.players[s].status==='allIn')return s;}
   return seat;
 }
 
-// Nächster aktiver Seat VOR seat (rückwärts im Uhrzeigersinn)
-// Für Blind-Vergabe: BB = prevBefore(dealer), SB = prevBefore(BB)
-function prevBefore(room,seat){
-  const n=room.players.length;
-  for(let i=1;i<=n;i++){const s=(seat-i+n)%n;if(room.players[s].status==='active' || room.players[s].status==='allIn')return s;}
-  return seat;
-}
-
-// Letzter aktiver Spieler VOR seat (rückwärts) — für closingPlayer post-flop
+// Letzter aktiver Spieler VOR seat im Uhrzeigersinn — für closingPlayer post-flop
 function prevActiveSeat(room,seat){
   const n=room.players.length;
-  for(let i=1;i<=n;i++){const s=(seat-i+n)%n;if(room.players[s].status==='active' || room.players[s].status==='allIn')return s;}
+  for(let i=1;i<=n;i++){const s=(seat+i)%n;if(room.players[s].status==='active' || room.players[s].status==='allIn')return s;}
   return seat;
 }
 
@@ -589,7 +590,7 @@ function endStreet(room) {
   if (room.players.filter(p=>p.status==='active').length===0){showdown(room);return;}
 
   // Post-Flop Reihenfolge:
-  //   firstToAct    = UTG = nextAfter(dealer) — erster im Uhrzeigersinn nach Dealer
+  //   firstToAct    = UTG = nextAfter(dealer) — erster gegen den Uhrzeigersinn nach Dealer
   //   closingPlayer = Dealer = prevActiveSeat(firstToAct) — Dealer agiert zuletzt
   //
   // Heads-Up Post-Flop: BB zuerst, Dealer/SB zuletzt (umgekehrt zu Pre-Flop)
