@@ -137,9 +137,12 @@ class BettingRound {
   //   Nach Raise   : closingPlayer = Raiser
   // biggestBet     : bereits geposteter Höchsteinsatz
   // minRaise       : Mindest-Erhöhungsinkrement
-  constructor(activePlayers, firstToAct, closingPlayer, biggestBet, minRaise) {
+  constructor(activePlayers, firstToAct, closingPlayer, biggestBet, minRaise, allInMask) {
     this._active        = activePlayers.slice();
+    this._allIn         = (allInMask||activePlayers).map(Boolean);
     this._acted         = new Array(activePlayers.length).fill(false);
+    for (let i=0;i<this._allIn.length;i++) if (this._allIn[i]) this._acted[i]=true;
+
     this._firstToAct    = firstToAct;   // Startpunkt der Spielreihenfolge
     this._playerToAct   = firstToAct;
     this._closingPlayer = closingPlayer;
@@ -147,6 +150,8 @@ class BettingRound {
     this._minRaise      = minRaise;
     this._done          = false;
     this._numActive     = activePlayers.filter(Boolean).length;
+
+    this._advanceToNext();
   }
 
   playerToAct() { return this._playerToAct; }
@@ -163,7 +168,7 @@ class BettingRound {
     this._closingPlayer   = this._playerToAct;
     // Neuer Startpunkt = nächster Spieler nach Raiser (in Spielreihenfolge)
     this._firstToAct      = this._nextInOrder(this._playerToAct);
-    this._acted           = new Array(this._active.length).fill(false);
+    this._acted           = this._active.map((_,i)=>this._allIn[i]);
     this._acted[this._playerToAct] = true;
     this._advanceToNext();
   }
@@ -344,8 +349,8 @@ function startHand(room) {
   //   BB = anderer Spieler, handelt pre-flop ZULETZT (Option)
   //   Post-flop: BB zuerst, Dealer/SB zuletzt
 
-  const activePlayers = room.players.filter(p=>p.status==='active');
-  const headsUp = activePlayers.length === 2;
+  const inHandPlayers = room.players.filter(p=>p.status==='active'||p.status==='allIn');
+  const headsUp = inHandPlayers.length === 2;
 
   let sbSeat, bbSeat, firstToAct;
   if (headsUp) {
@@ -379,14 +384,15 @@ function startHand(room) {
   // Pre-Flop: BB schließt die Runde (hat die Option als letzter)
   // Reihenfolge: UTG → UTG+1 → ... → Dealer → SB → BB (closing)
   // Heads-Up:   SB/Dealer zuerst → BB (closing)
-  const activeArr=room.players.map(p=>p.status==='active');
+  const activeArr=room.players.map(p=>p.status==='active'||p.status==='allIn');
+  const allInMask=room.players.map(p=>p.status==='allIn');
   // DEBUG
   console.log("=== startHand DEBUG ===");
   console.log("dealer="+room.dealerSeat+"("+room.players[room.dealerSeat]?.name+") sb="+sbSeat+"("+room.players[sbSeat]?.name+") bb="+bbSeat+"("+room.players[bbSeat]?.name+") first="+firstToAct+"("+room.players[firstToAct]?.name+")");
   console.log("activeArr="+activeArr.map((a,i)=>i+":"+room.players[i]?.name+"="+a).join(","));
   console.log("======================");
-  const bbAmt=room.players[bbSeat].bet;
-  room.bettingRound=new BettingRound(activeArr, firstToAct, bbSeat, bbAmt, room.settings.bigBlind);
+  const bbAmt=Math.max(room.players[sbSeat].bet, room.players[bbSeat].bet);
+  room.bettingRound=new BettingRound(activeArr, firstToAct, bbSeat, bbAmt, room.settings.bigBlind, allInMask);
 
   broadcast(room);
   scheduleAction(room);
@@ -394,7 +400,7 @@ function startHand(room) {
 
 function nextAfter(room,seat){
   const n=room.players.length;
-  for(let i=1;i<=n;i++){const s=(seat+i)%n;if(room.players[s].status==='active')return s;}
+  for(let i=1;i<=n;i++){const s=(seat+i)%n;if(room.players[s].status==='active' || room.players[s].status==='allIn')return s;}
   return seat;
 }
 
@@ -402,14 +408,14 @@ function nextAfter(room,seat){
 // Für Blind-Vergabe: BB = prevBefore(dealer), SB = prevBefore(BB)
 function prevBefore(room,seat){
   const n=room.players.length;
-  for(let i=1;i<=n;i++){const s=(seat-i+n)%n;if(room.players[s].status==='active')return s;}
+  for(let i=1;i<=n;i++){const s=(seat-i+n)%n;if(room.players[s].status==='active' || room.players[s].status==='allIn')return s;}
   return seat;
 }
 
 // Letzter aktiver Spieler VOR seat (rückwärts) — für closingPlayer post-flop
 function prevActiveSeat(room,seat){
   const n=room.players.length;
-  for(let i=1;i<=n;i++){const s=(seat-i+n)%n;if(room.players[s].status==='active')return s;}
+  for(let i=1;i<=n;i++){const s=(seat-i+n)%n;if(room.players[s].status==='active' || room.players[s].status==='allIn')return s;}
   return seat;
 }
 
@@ -424,15 +430,25 @@ function scheduleAction(room) {
   clearTimer(room);
   const br=room.bettingRound;
 
-  // AllIn-Spieler aus der aktiven Menge entfernen (ohne leave() da kein fold)
+  // Status-Sync: In-Hand-Spieler (active/allIn) behalten, Fold/Out entfernen
   if (br) {
+    let activeCount=0;
     for (let i=0;i<room.players.length;i++) {
-      if (br._active[i] && room.players[i].status!=='active') {
-        br._active[i]=false;
-        br._acted[i]=true; // gilt als "gehandelt"
-        br._numActive=Math.max(0,br._numActive-1);
+      const st=room.players[i].status;
+      const inHand = st==='active' || st==='allIn';
+      br._active[i]=inHand;
+      br._allIn[i]=st==='allIn';
+      if (!inHand) {
+        br._acted[i]=true;
+      } else if (br._allIn[i]) {
+        br._acted[i]=true;
+        activeCount++;
+      } else {
+        activeCount++;
       }
     }
+    br._numActive=activeCount;
+    if (!br._active[br._playerToAct] || br._acted[br._playerToAct]) br._advanceToNext();
   }
 
   if (!br||!br.inProgress()) { endStreet(room); return; }
@@ -512,6 +528,7 @@ function applyAction(room,playerId,action,amount) {
     case 'call': {
       const ca=Math.min(player.stack,br.biggestBet()-player.bet);
       placeBet(room,seat,ca);
+      if(player.status==='allIn') br._allIn[seat]=true;
       br.passive();
       break;
     }
@@ -522,7 +539,7 @@ function applyAction(room,playerId,action,amount) {
       const total=Math.max(minTotal,Math.min(amount,maxTotal));
       const toAdd=Math.min(player.stack,total-player.bet);
       placeBet(room,seat,toAdd);
-      if(player.stack===0) player.status='allIn';
+      if(player.stack===0) { player.status='allIn'; br._allIn[seat]=true; }
       br.aggressive(player.bet);
       break;
     }
@@ -531,6 +548,7 @@ function applyAction(room,playerId,action,amount) {
       const toAdd=player.stack;
       placeBet(room,seat,toAdd);
       player.status='allIn';
+      br._allIn[seat]=true;
       if(player.bet>br.biggestBet()) br.aggressive(player.bet);
       else br.passive();
       break;
@@ -575,7 +593,8 @@ function endStreet(room) {
   //   closingPlayer = Dealer = prevActiveSeat(firstToAct) — Dealer agiert zuletzt
   //
   // Heads-Up Post-Flop: BB zuerst, Dealer/SB zuletzt (umgekehrt zu Pre-Flop)
-  const activeArr=room.players.map(p=>p.status==='active');
+  const activeArr=room.players.map(p=>p.status==='active'||p.status==='allIn');
+  const allInMask=room.players.map(p=>p.status==='allIn');
   const activeCnt=activeArr.filter(Boolean).length;
 
   let postFirst, postClose;
@@ -596,7 +615,7 @@ function endStreet(room) {
     postClose = prevActiveSeat(room, postFirst); // = Dealer wenn noch aktiv
   }
 
-  room.bettingRound=new BettingRound(activeArr, postFirst, postClose, 0, room.settings.bigBlind);
+  room.bettingRound=new BettingRound(activeArr, postFirst, postClose, 0, room.settings.bigBlind, allInMask);
   scheduleAction(room);
 }
 
