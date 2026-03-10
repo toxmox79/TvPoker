@@ -197,14 +197,14 @@ class BettingRound {
     this._advanceToNext();
   }
 
-  // Nächsten Spieler in der SPIELREIHENFOLGE finden (gegen Uhrzeigersinn ab firstToAct)
+  // Nächsten Spieler in der SPIELREIHENFOLGE finden (im Uhrzeigersinn ab firstToAct)
   // der noch nicht gehandelt hat
   _advanceToNext() {
     const n = this._active.length;
-    // Iteriere in Spielreihenfolge: firstToAct, firstToAct-1, ..., closingPlayer
+    // Iteriere in Spielreihenfolge: firstToAct, firstToAct+1, ..., closingPlayer
     // Finde den ersten der noch active && !acted ist
     for (let i = 0; i < n; i++) {
-      const s = (this._firstToAct - i + n) % n;
+      const s = (this._firstToAct + i) % n;
       if (this._active[s] && !this._acted[s]) {
         this._playerToAct = s;
         return;
@@ -214,21 +214,21 @@ class BettingRound {
     this._done = true;
   }
 
-  // Nächster aktiver Seat nach `seat` in Spielreihenfolge (-1 mod n) = gegen Uhrzeigersinn
+  // Nächster aktiver Seat nach `seat` in Spielreihenfolge (+1 mod n) = im Uhrzeigersinn
   _nextInOrder(seat) {
     const n = this._active.length;
     for (let i = 1; i <= n; i++) {
-      const s = (seat - i + n) % n;
+      const s = (seat + i) % n;
       if (this._active[s]) return s;
     }
     return seat;
   }
 
-  // Vorheriger aktiver Seat vor `seat` in Spielreihenfolge (+1 mod n) = im Uhrzeigersinn
+  // Vorheriger aktiver Seat vor `seat` in Spielreihenfolge (-1 mod n) = gegen Uhrzeigersinn
   _prevInOrder(seat) {
     const n = this._active.length;
     for (let i = 1; i <= n; i++) {
-      const s = (seat + i) % n;
+      const s = (seat - i + n) % n;
       if (this._active[s] && s !== seat) return s;
     }
     return seat;
@@ -335,11 +335,11 @@ function startHand(room) {
   for (let i=1;i<=n;i++){const s=(d+i)%n;if(room.players[s].status==='active'){room.dealerSeat=s;break;}}
 
   // -- Blind & Positions-Zuweisung (offizielle Texas Hold'em Regeln) --
-  // Seat-Indizes steigen im Uhrzeigersinn; Spielreihenfolge läuft gegen den Uhrzeigersinn (links vom Dealer beginnt).
+  // Seat-Indizes steigen im Uhrzeigersinn; Spielreihenfolge läuft ebenfalls im Uhrzeigersinn.
   //
-  // SB  = direkt LINKS vom Dealer (gegen Uhrzeigersinn)  = prevBefore(dealer)
-  // BB  = direkt LINKS vom SB      (gegen Uhrzeigersinn) = prevBefore(SB)
-  // UTG = direkt LINKS vom BB      (gegen Uhrzeigersinn) = prevBefore(BB)  → handelt PRE-FLOP ZUERST
+  // SB  = direkt LINKS vom Dealer (im Uhrzeigersinn)  = nextAfter(dealer)
+  // BB  = direkt LINKS vom SB      (im Uhrzeigersinn) = nextAfter(SB)
+  // UTG = direkt LINKS vom BB      (im Uhrzeigersinn) = nextAfter(BB)  → handelt PRE-FLOP ZUERST
   // BB  handelt PRE-FLOP ZULETZT   = closingPlayer pre-flop (BB-Option, auch Heads-Up)
   //
   // POST-FLOP: SB handelt ZUERST, Dealer (BTN) handelt ZULETZT
@@ -355,12 +355,12 @@ function startHand(room) {
   let sbSeat, bbSeat, firstToAct;
   if (headsUp) {
     sbSeat     = room.dealerSeat;                // Dealer = SB heads-up
-    bbSeat     = prevBefore(room, sbSeat);       // anderer Spieler = BB (links vom Dealer)
+    bbSeat     = nextAfter(room, sbSeat);        // anderer Spieler = BB (links vom Dealer)
     firstToAct = sbSeat;                         // SB/Dealer handelt zuerst pre-flop
   } else {
-    sbSeat     = prevBefore(room, room.dealerSeat); // SB links vom Dealer
-    bbSeat     = prevBefore(room, sbSeat);          // BB links vom SB
-    firstToAct = prevBefore(room, bbSeat);          // UTG links vom BB = erster pre-flop
+    sbSeat     = nextAfter(room, room.dealerSeat); // SB links vom Dealer
+    bbSeat     = nextAfter(room, sbSeat);          // BB links vom SB
+    firstToAct = nextAfter(room, bbSeat);          // UTG links vom BB = erster pre-flop
   }
 
   room.players[sbSeat].isSB=true;
@@ -590,7 +590,7 @@ function endStreet(room) {
   if (room.players.filter(p=>p.status==='active').length===0){showdown(room);return;}
 
   // Post-Flop Reihenfolge:
-  //   firstToAct    = UTG = prevBefore(dealer) — erster links vom Dealer
+  //   firstToAct    = UTG = nextAfter(dealer) — erster links vom Dealer (im Uhrzeigersinn)
   //   closingPlayer = Dealer = prevActiveSeat(firstToAct) — Dealer agiert zuletzt
   //
   // Heads-Up Post-Flop: BB zuerst, Dealer/SB zuletzt (umgekehrt zu Pre-Flop)
@@ -607,12 +607,12 @@ function endStreet(room) {
       postFirst = bbIdx;
       postClose = room.dealerSeat;
     } else {
-      postFirst = prevBefore(room, room.dealerSeat);
+      postFirst = nextAfter(room, room.dealerSeat);
       postClose = prevActiveSeat(room, postFirst);
     }
   } else {
     // Standard: UTG (links vom Dealer) zuerst, Dealer zuletzt
-    postFirst = prevBefore(room, room.dealerSeat);
+    postFirst = nextAfter(room, room.dealerSeat);
     postClose = prevActiveSeat(room, postFirst); // = Dealer wenn noch aktiv
   }
 
